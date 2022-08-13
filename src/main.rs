@@ -1,3 +1,15 @@
+use crate::state::State;
+
+extern crate glutin_window;
+extern crate graphics;
+extern crate opengl_graphics;
+extern crate piston;
+
+mod state;
+mod ui;
+
 fn main() {
-    println!("This project is gonna be pretty neat");
+    let mut state = State::new(80.0, 60.0, (255, 0, 255));
+
+    ui::start(&mut state);
 }
