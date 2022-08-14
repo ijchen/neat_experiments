@@ -5,6 +5,9 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
+mod game_xor;
+mod neural_network;
+mod environment;
 mod state;
 mod ui;
 
