@@ -1,0 +1,7 @@
+I see many choices that could be made (and should be tested) when crossing over genes:
+- Is "randomness" per-gene or once for the whole crossover? (pick one parent randomly vs pick one gene randomly)
+- How are new genes created? (could be from one parent randomly, entirely random, randomly offset from one parent, halfway between the parents, a random interpolation between the parent genes, one of these options randomly, etc.)
+- Is the bias treated differently from weights?
+- How (if at all) does the relative fitness of the parents effect crossover?
+  - Is it just a binary "which is more fit", or a "how much more fit is x compared to y"?
+- Probably more I can't think of right now
