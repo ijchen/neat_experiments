@@ -1,7 +1,10 @@
 use crate::{
-    can_crossover::CanCrossover, neural_network_neuron::NeuralNetworkNeuron, predictor::Predictor,
+    can_crossover::CanCrossover,
+    can_mutate::CanMutate,
+    neural_network_neuron::{NeuralNetworkActivationFun, NeuralNetworkNeuron},
+    predictor::Predictor,
 };
-
+#[derive(Clone)]
 pub struct NeuralNetwork {
     input_count: usize,
     output_count: usize,
@@ -65,16 +68,35 @@ impl CanCrossover for NeuralNetwork {
     }
 }
 
+impl CanMutate for NeuralNetwork {
+    fn mutate(&mut self) {
+        for layer in &mut self.layers {
+            for neuron in layer.iter_mut() {
+                neuron.mutate();
+            }
+        }
+    }
+}
+
 impl NeuralNetwork {
     pub fn new(input_count: usize, output_count: usize, layer_sizes: Vec<usize>) -> Self {
         let mut layers = vec![];
         let mut prev_layer_size = input_count;
         for size in layer_sizes {
-            layers.push(vec![NeuralNetworkNeuron::new(prev_layer_size); size]);
+            layers.push(vec![
+                NeuralNetworkNeuron::new(
+                    prev_layer_size,
+                    NeuralNetworkActivationFun::ReLU
+                );
+                size
+            ]);
             prev_layer_size = size;
         }
         layers.push(vec![
-            NeuralNetworkNeuron::new(prev_layer_size);
+            NeuralNetworkNeuron::new(
+                prev_layer_size,
+                NeuralNetworkActivationFun::Identity
+            );
             output_count
         ]);
 
@@ -83,5 +105,13 @@ impl NeuralNetwork {
             output_count,
             layers,
         }
+    }
+
+    // TODO temp
+    pub fn log(&self) {
+        println!("Logging...");
+        println!("input_count: {:?}", self.input_count);
+        println!("output_count: {:?}", self.output_count);
+        println!("{:#?}", self.layers);
     }
 }

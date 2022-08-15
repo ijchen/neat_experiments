@@ -36,3 +36,9 @@ impl Environment for GameXor {
         scores
     }
 }
+
+impl GameXor {
+    pub fn new() -> Self {
+        GameXor {}
+    }
+}

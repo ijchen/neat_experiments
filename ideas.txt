@@ -5,3 +5,6 @@ I see many choices that could be made (and should be tested) when crossing over 
 - How (if at all) does the relative fitness of the parents effect crossover?
   - Is it just a binary "which is more fit", or a "how much more fit is x compared to y"?
 - Probably more I can't think of right now
+- When a member of the population is selected as a parent, does that change their odds of being a parent in the future?
+  - Maybe once you are a parent, you are removed from the pool of possible parents
+  - Or maybe becoming a parent has a "cost" to your fitness for the next round of parent selection
