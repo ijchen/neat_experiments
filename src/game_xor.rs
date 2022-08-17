@@ -1,6 +1,26 @@
-use crate::{environment::Environment, predictor::Predictor};
+use graphics::Context;
+use opengl_graphics::GlGraphics;
+
+use crate::{environment::Environment, predictor::Predictor, renderable::Renderable};
 
 pub struct GameXor {}
+
+impl Renderable for GameXor {
+    fn render(
+        &self,
+        ctx: &mut Context,
+        gl: &mut GlGraphics,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) {
+        // Draw the background
+        let fill: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+        let rect = graphics::rectangle::rectangle_by_corners(x, y, x + width, y + height);
+        graphics::rectangle(fill, rect, ctx.transform, gl);
+    }
+}
 
 impl Environment for GameXor {
     fn input_count(&self) -> usize {
@@ -28,7 +48,7 @@ impl Environment for GameXor {
             score += 1.0 - (predictor.predict(&vec![0.0, 1.0])[0] - 1.0).abs();
             score += 1.0 - (predictor.predict(&vec![1.0, 0.0])[0] - 1.0).abs();
             score += 1.0 - (predictor.predict(&vec![1.0, 1.0])[0] - 0.0).abs();
-            score = f64::max(score, 0.0);
+            score = f64::max(score / 4.0, 0.0);
 
             scores.push(score);
         }

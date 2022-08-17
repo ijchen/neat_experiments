@@ -58,10 +58,15 @@ impl CanMutate for NeuralNetworkNeuron {
         // TODO Be thoughtful about how mutation happens
         let mut rng = rand::thread_rng();
 
+        // TODO I'd rather not clamp these values but I'm testing if it helps
         for i in 0..self.weights.len() {
-            self.weights[i] += rng.gen_range(-0.1..0.1);
+            if rng.gen_bool(0.1) {
+                self.weights[i] += rng.gen_range(-0.5..0.5);
+            }
         }
-        self.bias += rng.gen_range(-0.1..0.1);
+        if rng.gen_bool(0.1) {
+            self.bias += rng.gen_range(-0.5..0.5);
+        }
     }
 }
 

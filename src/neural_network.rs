@@ -86,7 +86,7 @@ impl NeuralNetwork {
             layers.push(vec![
                 NeuralNetworkNeuron::new(
                     prev_layer_size,
-                    NeuralNetworkActivationFun::ReLU
+                    NeuralNetworkActivationFun::TanH
                 );
                 size
             ]);

@@ -1,14 +1,18 @@
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderEvent, UpdateEvent};
 use piston::window::WindowSettings;
-use piston::{ButtonEvent, MouseCursorEvent};
+use piston::{
+    Event::{Input, Loop},
+    Input::{Button, Move},
+    Loop::{Render, Update},
+    Motion::MouseCursor,
+};
 
 use crate::state::State;
 
 fn make_window() -> GlutinWindow {
-    WindowSettings::new("NEAT Experiments", (800, 600))
+    WindowSettings::new("NEAT Experiments", (1200, 675))
         .samples(4)
         .build()
         .expect("Unable to create Glutin window")
@@ -22,28 +26,29 @@ pub fn start(state: &mut State) {
     // Start the event loop
     let mut events = Events::new(EventSettings::new());
     while let Some(event) = events.next(&mut window) {
-        // Tick
-        if let Some(args) = event.update_args() {
-            state.tick(args.dt * 1000.0);
-        }
+        match event {
+            Loop(loop_event) => match loop_event {
+                Render(render_args) => {
+                    let (width, height) = (render_args.window_size[0], render_args.window_size[1]);
 
-        // Render
-        if let Some(args) = event.render_args() {
-            let (width, height) = (args.window_size[0], args.window_size[1]);
-
-            gl.draw(args.viewport(), |mut ctx, mut gl| {
-                state.render(&mut ctx, &mut gl, width, height);
-            });
-        }
-
-        // Mouse position
-        if let Some(args) = event.mouse_cursor_args() {
-            state.event_mouse_pos(args[0], args[1]);
-        }
-
-        // Button
-        if let Some(args) = event.button_args() {
-            state.event_button(&args);
+                    gl.draw(render_args.viewport(), |mut ctx, mut gl| {
+                        state.render(&mut ctx, &mut gl, width, height);
+                    });
+                }
+                Update(update_args) => {
+                    state.tick(update_args.dt * 1000.0);
+                }
+                _ => {}
+            },
+            Input(input_event, _) => match input_event {
+                Button(button_args) => state.event_button(&button_args),
+                Move(motion) => match motion {
+                    MouseCursor([x, y]) => state.event_mouse_pos(x, y),
+                    _ => {}
+                },
+                _ => {}
+            },
+            _ => {}
         }
     }
 }

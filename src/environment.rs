@@ -1,6 +1,6 @@
-use crate::predictor::Predictor;
+use crate::{predictor::Predictor, renderable::Renderable};
 
-pub trait Environment {
+pub trait Environment: Renderable {
     /// Returns the number of inputs given to a predictor
     fn input_count(&self) -> usize;
 

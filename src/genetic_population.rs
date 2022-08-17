@@ -41,17 +41,23 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
 
     pub fn advance_generation(&mut self) {
         // Evaluate the fitness of all members of the population
-        let scores = self.environment.evaluate_predictors(&self.population);
+        let mut scores = self.environment.evaluate_predictors(&self.population);
+
+        // Normalize the scores
+        let total_fitness: f64 = scores.iter().sum();
+        scores = scores
+            .iter_mut()
+            .map(|score| *score / total_fitness)
+            .collect();
 
         // Produce a new population with parents from the previous population
         let mut new_population = vec![];
-        let total_fitness = scores.iter().sum();
         let mut rng = rand::thread_rng();
         for _ in 0..self.population.len() {
             // Select two parents from the population based on their fitness
             // TODO refactor out code duplication
             let parent1 = {
-                let fitness_threshold = rng.gen_range(0.0..total_fitness);
+                let fitness_threshold = rng.gen_range(0.0..1.0);
 
                 let mut running_total = 0.0;
                 let mut index = 0;
@@ -70,7 +76,7 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
                 &self.population[index]
             };
             let parent2 = {
-                let fitness_threshold = rng.gen_range(0.0..total_fitness);
+                let fitness_threshold = rng.gen_range(0.0..1.0);
 
                 let mut running_total = 0.0;
                 let mut index = 0;
@@ -103,5 +109,13 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
         // Begin the next generation
         self.population = new_population;
         self.generation += 1;
+    }
+
+    pub fn generation(&self) -> u32 {
+        self.generation
+    }
+
+    pub fn environment(&self) -> &E {
+        &self.environment
     }
 }
