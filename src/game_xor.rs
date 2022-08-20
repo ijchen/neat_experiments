@@ -1,6 +1,5 @@
-use gfx_device_gl::Device;
 use graphics::Context;
-use piston_window::{G2d, Glyphs};
+use opengl_graphics::GlGraphics;
 
 use crate::{environment::Environment, predictor::Predictor, renderable::Renderable};
 
@@ -9,10 +8,8 @@ pub struct GameXor {}
 impl Renderable for GameXor {
     fn render(
         &self,
-        glyphs: &mut Glyphs,
-        device: &mut Device,
         ctx: &mut Context,
-        gl: &mut G2d,
+        gl: &mut GlGraphics,
         x: f64,
         y: f64,
         width: f64,

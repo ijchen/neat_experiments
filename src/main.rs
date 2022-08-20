@@ -1,10 +1,8 @@
 use state::State;
 
-extern crate gfx_device_gl;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
-extern crate piston_window;
 
 mod can_crossover;
 mod can_mutate;

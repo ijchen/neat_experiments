@@ -1,3 +1,5 @@
+use glutin_window::GlutinWindow;
+use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
 use piston::window::WindowSettings;
 use piston::{
@@ -6,11 +8,11 @@ use piston::{
     Loop::{Render, Update},
     Motion::MouseCursor,
 };
-use piston_window::PistonWindow;
 
+use crate::renderable::Renderable;
 use crate::state::State;
 
-fn make_window() -> PistonWindow {
+fn make_window() -> GlutinWindow {
     WindowSettings::new("NEAT Experiments", (1200, 675))
         .samples(4)
         .build()
@@ -20,11 +22,7 @@ fn make_window() -> PistonWindow {
 pub fn start(state: &mut State) {
     // Create a new window
     let mut window = make_window();
-
-    // TODO Refactor this so it's not passing a random font around everywhere
-    let mut glyphs = window
-        .load_font("assets/fonts/OpenSans-Regular.ttf")
-        .unwrap();
+    let mut gl = GlGraphics::new(OpenGL::V3_2);
 
     // Start the event loop
     let mut events = Events::new(EventSettings::new());
@@ -34,8 +32,8 @@ pub fn start(state: &mut State) {
                 Render(render_args) => {
                     let (width, height) = (render_args.window_size[0], render_args.window_size[1]);
 
-                    window.draw_2d(&event, |mut ctx, mut gl, mut device| {
-                        state.render(&mut glyphs, &mut device, &mut ctx, gl, width, height);
+                    gl.draw(render_args.viewport(), |mut ctx, gl| {
+                        state.render(&mut ctx, gl, 0.0, 0.0, width, height);
                     });
                 }
                 Update(update_args) => {
