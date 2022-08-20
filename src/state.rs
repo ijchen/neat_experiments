@@ -1,6 +1,7 @@
-use graphics::Context;
-use opengl_graphics::GlGraphics;
+use gfx_device_gl::Device;
+use graphics::{Context, Transformed};
 use piston::{Button, ButtonArgs, ButtonState, MouseButton};
+use piston_window::{text, G2d, Glyphs};
 
 use crate::{
     environment::Environment, game_xor::GameXor, genetic_population::GeneticPopulation,
@@ -72,7 +73,15 @@ impl State {
         // Does nothing, for now
     }
 
-    pub fn render(&mut self, ctx: &mut Context, gl: &mut GlGraphics, width: f64, height: f64) {
+    pub fn render(
+        &mut self,
+        glyphs: &mut Glyphs,
+        device: &mut Device,
+        ctx: &mut Context,
+        gl: &mut G2d,
+        width: f64,
+        height: f64,
+    ) {
         // Draw the background
         let fill: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
         let rect = graphics::rectangle::rectangle_by_corners(0.0, 0.0, width, height);
@@ -85,27 +94,29 @@ impl State {
         let env_h = height;
         self.population
             .environment()
-            .render(ctx, gl, env_x, env_y, env_w, env_h);
+            .render(glyphs, device, ctx, gl, env_x, env_y, env_w, env_h);
 
         // Draw the population
         let pop_x = env_w;
         let pop_y = 0.0;
         let pop_w = width - env_w;
         let pop_h = height / 2.0;
-        self.render_info_pane(ctx, gl, pop_x, pop_y, pop_w, pop_h);
+        self.render_info_pane(glyphs, device, ctx, gl, pop_x, pop_y, pop_w, pop_h);
 
         // Draw the infomation pane
         let info_x = env_w;
         let info_y = pop_h;
         let info_w = width - env_w;
         let info_h = height - pop_h;
-        self.render_info_pane(ctx, gl, info_x, info_y, info_w, info_h);
+        self.render_info_pane(glyphs, device, ctx, gl, info_x, info_y, info_w, info_h);
     }
 
     fn render_info_pane(
         &mut self,
+        glyphs: &mut Glyphs,
+        device: &mut Device,
         ctx: &mut Context,
-        gl: &mut GlGraphics,
+        gl: &mut G2d,
         x: f64,
         y: f64,
         width: f64,
@@ -120,6 +131,21 @@ impl State {
         ];
         let rect = graphics::rectangle::rectangle_by_corners(x, y, x + width, y + height);
         graphics::rectangle(fill, rect, ctx.transform, gl);
+
+        // Temporary text
+        let fill: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+        text::Text::new_color(fill, 127)
+            .draw(
+                "Hello, world!",
+                glyphs,
+                &ctx.draw_state,
+                ctx.transform.trans(x + width / 2.0, y + height / 2.0),
+                gl,
+            )
+            .unwrap();
+
+        // Update glyphs before rendering.
+        glyphs.factory.encoder.flush(device);
     }
 
     pub fn event_mouse_pos(&mut self, x: f64, y: f64) {

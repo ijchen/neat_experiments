@@ -1,13 +1,10 @@
-use genetic_population::GeneticPopulation;
-use neural_network_neuron::NeuralNetworkActivationFun;
-use predictor::Predictor;
+use state::State;
 
-use crate::{environment::Environment, game_xor::GameXor, state::State};
-
-extern crate glutin_window;
+extern crate gfx_device_gl;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
+extern crate piston_window;
 
 mod can_crossover;
 mod can_mutate;

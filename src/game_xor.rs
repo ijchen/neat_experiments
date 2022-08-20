@@ -1,5 +1,6 @@
+use gfx_device_gl::Device;
 use graphics::Context;
-use opengl_graphics::GlGraphics;
+use piston_window::{G2d, Glyphs};
 
 use crate::{environment::Environment, predictor::Predictor, renderable::Renderable};
 
@@ -8,15 +9,33 @@ pub struct GameXor {}
 impl Renderable for GameXor {
     fn render(
         &self,
+        glyphs: &mut Glyphs,
+        device: &mut Device,
         ctx: &mut Context,
-        gl: &mut GlGraphics,
+        gl: &mut G2d,
         x: f64,
         y: f64,
         width: f64,
         height: f64,
     ) {
-        // Draw the background
+        // Draw a background
         let fill: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
+        let rect = graphics::rectangle::rectangle_by_corners(x, y, x + width, y + height);
+        graphics::rectangle(fill, rect, ctx.transform, gl);
+
+        // Transform x, y, width, and height so that we only work in a max-size centered square
+        let (x, y, width, height) = {
+            let side_len = f64::min(width, height);
+            (
+                x + (width - side_len) / 2.0,
+                y + (height - side_len) / 2.0,
+                side_len,
+                side_len,
+            )
+        };
+
+        // Draw a background
+        let fill: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
         let rect = graphics::rectangle::rectangle_by_corners(x, y, x + width, y + height);
         graphics::rectangle(fill, rect, ctx.transform, gl);
     }
