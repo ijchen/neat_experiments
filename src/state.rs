@@ -1,5 +1,5 @@
-use graphics::Context;
-use opengl_graphics::GlGraphics;
+use graphics::{glyph_cache, CharacterCache, Context, Text, Transformed};
+use opengl_graphics::{GlGraphics, TextureSettings};
 use piston::{Button, ButtonArgs, ButtonState, MouseButton};
 
 use crate::{
@@ -65,8 +65,8 @@ impl Renderable for State {
         graphics::rectangle(fill, rect, ctx.transform, gl);
 
         // Draw the environment
-        let env_x = 0.0;
-        let env_y = 0.0;
+        let env_x = x;
+        let env_y = y;
         let env_w = f64::min(height, 2.0 / 3.0 * width);
         let env_h = height;
         self.population
@@ -74,15 +74,15 @@ impl Renderable for State {
             .render(ctx, gl, env_x, env_y, env_w, env_h);
 
         // Draw the population
-        let pop_x = env_w;
-        let pop_y = 0.0;
+        let pop_x = env_x + env_w;
+        let pop_y = env_y;
         let pop_w = width - env_w;
         let pop_h = height / 2.0;
         self.render_info_pane(ctx, gl, pop_x, pop_y, pop_w, pop_h);
 
         // Draw the infomation pane
-        let info_x = env_w;
-        let info_y = pop_h;
+        let info_x = env_x + env_w;
+        let info_y = pop_y + pop_h;
         let info_w = width - env_w;
         let info_h = height - pop_h;
         self.render_info_pane(ctx, gl, info_x, info_y, info_w, info_h);
@@ -103,7 +103,7 @@ impl State {
                 vec![4],
             ));
         }
-        let mut population = GeneticPopulation::new(nns, environment);
+        let population = GeneticPopulation::new(nns, environment);
 
         State { population }
     }
@@ -131,20 +131,26 @@ impl State {
         let rect = graphics::rectangle::rectangle_by_corners(x, y, x + width, y + height);
         graphics::rectangle(fill, rect, ctx.transform, gl);
 
-        // // Temporary text
-        // let fill: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-        // text::Text::new_color(fill, 127)
-        //     .draw(
-        //         "Hello, world!",
-        //         glyphs,
-        //         &ctx.draw_state,
-        //         ctx.transform.trans(x + width / 2.0, y + height / 2.0),
-        //         gl,
-        //     )
-        //     .unwrap();
+        // Temporary text
+        let fill: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+        let mut glyphs = glyph_cache::rusttype::GlyphCache::new(
+            "assets/fonts/OpenSans-Regular.ttf",
+            (),
+            TextureSettings::new(),
+        )
+        .unwrap();
+        Text::new_color(fill, 127)
+            .draw(
+                "Hello, world!",
+                &mut glyphs,
+                &ctx.draw_state,
+                ctx.transform.trans(x + width / 2.0, y + height / 2.0),
+                gl,
+            )
+            .unwrap();
     }
 
-    pub fn event_mouse_pos(&mut self, x: f64, y: f64) {
+    pub fn event_mouse_pos(&mut self, _x: f64, _y: f64) {
         // Does nothing, for now
     }
 

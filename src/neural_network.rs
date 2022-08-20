@@ -106,12 +106,4 @@ impl NeuralNetwork {
             layers,
         }
     }
-
-    // TODO temp
-    pub fn log(&self) {
-        println!("Logging...");
-        println!("input_count: {:?}", self.input_count);
-        println!("output_count: {:?}", self.output_count);
-        println!("{:#?}", self.layers);
-    }
 }
