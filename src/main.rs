@@ -1,7 +1,6 @@
 use macroquad::window::Conf;
 use simple_example_app::SimpleExampleApp;
 
-mod event;
 mod renderable;
 mod updatable;
 mod ui;

@@ -1,6 +1,6 @@
 use macroquad::window::Conf;
 
-use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable, event::EventHandler};
+use crate::{renderable::Renderable, updatable::Updatable};
 
 pub fn window_config() -> Conf {
     Conf {
@@ -16,14 +16,11 @@ pub fn window_config() -> Conf {
     }
 }
 
-pub async fn start<A: Renderable + Updatable + EventHandler>(app: &mut A) {
+pub async fn start<A: Renderable + Updatable>(app: &mut A) {
     // Background color for clearing the screen between frames
     let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
 
     loop {
-        // Handle events
-        // TODO
-
         // Update the app
         let dt = macroquad::time::get_frame_time() as f64;
         app.update(dt);
@@ -32,7 +29,7 @@ pub async fn start<A: Renderable + Updatable + EventHandler>(app: &mut A) {
         macroquad::window::clear_background(bg_color);
 
         // Render the app
-        app.render(RenderArgs::new(), 0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
+        app.render(0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
 
         // Await the next frame
         macroquad::window::next_frame().await
