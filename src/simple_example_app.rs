@@ -1,11 +1,13 @@
-use crate::{renderable::Renderable, updatable::Updatable};
+#![allow(unused)] // TODO
+
+use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable};
 
 pub struct SimpleExampleApp {
     elapsed: f64
 }
 
 impl Renderable for SimpleExampleApp {
-    fn render(&self, _x: f64, _y: f64, _width: f64, height: f64) {
+    fn render(&self, _args: &RenderArgs, _x: f64, _y: f64, _width: f64, height: f64) {
         use macroquad::prelude::*;
 
         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);

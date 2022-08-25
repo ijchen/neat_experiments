@@ -1,13 +1,13 @@
-use macroquad::window::Conf;
+use macroquad::{window::{Conf, clear_background}, text::load_ttf_font, prelude::Color};
 
-use crate::{renderable::Renderable, updatable::Updatable};
+use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable};
 
 pub fn window_config() -> Conf {
     Conf {
         window_title: "NEAT Experiments".to_string(),
-        window_width: 800,
-        window_height: 600,
-        high_dpi: true,
+        window_width: 960,
+        window_height: 540,
+        high_dpi: false,
         fullscreen: false,
         sample_count: 1,
         window_resizable: true,
@@ -17,8 +17,14 @@ pub fn window_config() -> Conf {
 }
 
 pub async fn start<A: Renderable + Updatable>(app: &mut A) {
-    // Background color for clearing the screen between frames
+    // TODO assets loading screen
+    clear_background(Color::from_rgba(255, 0, 255, 255));
+
+    // Prepare and preload assets
     let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
+
+    let font = load_ttf_font("assets/fonts/OpenSans-Regular.ttf").await.unwrap();
+    let render_args = RenderArgs::new(font);
 
     loop {
         // Update the app
@@ -29,7 +35,7 @@ pub async fn start<A: Renderable + Updatable>(app: &mut A) {
         macroquad::window::clear_background(bg_color);
 
         // Render the app
-        app.render(0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
+        app.render(&render_args, 0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
 
         // Await the next frame
         macroquad::window::next_frame().await
