@@ -51,10 +51,12 @@ impl XorApp {
     fn render_environment(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
         
+        // Draw a white background
         let fill = Color::from_rgba(255, 255, 255, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
+
         // Transform x, y, width, and height so that we only work in a max-size centered square
-        let (env_inner_x, env_inner_y, env_inner_w, env_inner_h) = {
+        let (x, y, width, height) = {
             let side_len = f64::min(width, height);
             (
                 x + (width - side_len) / 2.0,
@@ -63,13 +65,32 @@ impl XorApp {
                 side_len,
             )
         };
-        let fill = Color::from_rgba(0, 0, 255, 255);
-        draw_rectangle(env_inner_x as f32, env_inner_y as f32, env_inner_w as f32, env_inner_h as f32, fill);
+
+        // Render the XOR field
+        let mut image = Image::gen_image_color(width.round() as u16, height.round() as u16, Color::from_rgba(255, 255, 255, 255));
+        let texture = Texture2D::from_image(&image);
+        for row in 0..image.width {
+            for col in 0..image.height {
+                let x = col as f64 / image.width as f64;
+                let y = row as f64 / image.height as f64;
+                let brightness = y * x + (1.0 - y) * (1.0 - x);
+                let color = Color::from_rgba(
+                    (brightness * 255.0).round() as u8,
+                    (brightness * 255.0).round() as u8,
+                    (brightness * 255.0).round() as u8,
+                    255
+                );
+                image.set_pixel(col as u32, row as u32, color);
+            }
+        }
+        texture.update(&image);
+        draw_texture(texture, x as f32, y as f32, WHITE);
     }
 
     fn render_population(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
 
+        // Background
         let fill = Color::from_rgba(255, 127, 0, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
     }
@@ -77,8 +98,11 @@ impl XorApp {
     fn render_info_pane(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
 
+        // Background
         let fill = Color::from_rgba(0, 0, 0, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
+
+        // Elapsed time text
         let elapsed_text = format!("Elapsed time: {:.2}s", self.elapsed);
         let padding = width as f32 / 25.0;
         let font_size = f64::max(8.0, width / 20.0) as f32;
