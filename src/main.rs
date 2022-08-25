@@ -11,7 +11,6 @@ mod genetic_population;
 mod neural_network;
 mod neural_network_neuron;
 mod predictor;
-mod state;
 mod ui;
 mod example_app;
 
