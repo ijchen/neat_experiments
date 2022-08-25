@@ -1,9 +1,8 @@
-use state::State;
+use macroquad::window::Conf;
+use example_app::ExampleApp;
 
-extern crate graphics;
-extern crate opengl_graphics;
-extern crate piston;
-
+mod renderable;
+mod updatable;
 mod can_crossover;
 mod can_mutate;
 mod environment;
@@ -12,12 +11,17 @@ mod genetic_population;
 mod neural_network;
 mod neural_network_neuron;
 mod predictor;
-mod renderable;
 mod state;
 mod ui;
+mod example_app;
 
-fn main() {
-    let mut state = State::new();
+fn window_config() -> Conf {
+    crate::ui::window_config()
+}
 
-    ui::start(&mut state);
+#[macroquad::main(window_config)]
+async fn main() {
+    let mut app = ExampleApp::new();
+
+    ui::start(&mut app).await;
 }

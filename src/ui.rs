@@ -1,55 +1,40 @@
-use glutin_window::GlutinWindow;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
-use piston::window::WindowSettings;
-use piston::{
-    Event::{Input, Loop},
-    Input::{Button, Move},
-    Loop::{Render, Update},
-    Motion::MouseCursor,
-};
+use macroquad::window::Conf;
 
-use crate::renderable::Renderable;
-use crate::state::State;
+use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable};
 
-fn make_window() -> GlutinWindow {
-    WindowSettings::new("NEAT Experiments", (1200, 675))
-        .samples(4)
-        .build()
-        .expect("Unable to create window")
+/// Make config information available to main for constructing a window
+pub fn window_config() -> Conf {
+    Conf {
+        window_title: "NEAT Experiments".to_string(),
+        window_width: 960,
+        window_height: 540,
+        high_dpi: false,
+        fullscreen: false,
+        sample_count: 1,
+        window_resizable: true,
+        icon: None, // TODO
+        ..Default::default()
+    }
 }
 
-pub fn start(state: &mut State) {
-    // Create a new window
-    let mut window = make_window();
-    let mut gl = GlGraphics::new(OpenGL::V3_2);
+pub async fn start<A: Renderable + Updatable>(app: &mut A) {
+    // Prepare and preload assets
+    // TODO assets loading screen
+    let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
+    let render_args = RenderArgs::new();
 
-    // Start the event loop
-    let mut events = Events::new(EventSettings::new());
-    while let Some(event) = events.next(&mut window) {
-        match event {
-            Loop(loop_event) => match loop_event {
-                Render(render_args) => {
-                    let (width, height) = (render_args.window_size[0], render_args.window_size[1]);
+    loop {
+        // Update the app
+        let dt = macroquad::time::get_frame_time() as f64;
+        app.update(dt);
 
-                    gl.draw(render_args.viewport(), |mut ctx, gl| {
-                        state.render(&mut ctx, gl, 0.0, 0.0, width, height);
-                    });
-                }
-                Update(update_args) => {
-                    state.tick(update_args.dt * 1000.0);
-                }
-                _ => {}
-            },
-            Input(input_event, _) => match input_event {
-                Button(button_args) => state.event_button(&button_args),
-                Move(motion) => match motion {
-                    MouseCursor([x, y]) => state.event_mouse_pos(x, y),
-                    _ => {}
-                },
-                _ => {}
-            },
-            _ => {}
-        }
+        // Clear the screen between frames
+        macroquad::window::clear_background(bg_color);
+
+        // Render the app
+        app.render(&render_args, 0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
+
+        // Await the next frame
+        macroquad::window::next_frame().await
     }
 }
