@@ -1,7 +1,8 @@
-use macroquad::{window::{Conf, clear_background}, text::load_ttf_font, prelude::Color};
+use macroquad::window::Conf;
 
 use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable};
 
+/// Make config information available to main for constructing a window
 pub fn window_config() -> Conf {
     Conf {
         window_title: "NEAT Experiments".to_string(),
@@ -17,14 +18,10 @@ pub fn window_config() -> Conf {
 }
 
 pub async fn start<A: Renderable + Updatable>(app: &mut A) {
-    // TODO assets loading screen
-    clear_background(Color::from_rgba(255, 0, 255, 255));
-
     // Prepare and preload assets
+    // TODO assets loading screen
     let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
-
-    let font = load_ttf_font("assets/fonts/OpenSans-Regular.ttf").await.unwrap();
-    let render_args = RenderArgs::new(font);
+    let render_args = RenderArgs::new();
 
     loop {
         // Update the app

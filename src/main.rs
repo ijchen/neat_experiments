@@ -1,11 +1,10 @@
 use macroquad::window::Conf;
-use xor_app::XorApp;
+use example_app::ExampleApp;
 
 mod renderable;
 mod updatable;
 mod ui;
-mod simple_example_app;
-mod xor_app;
+mod example_app;
 
 fn window_config() -> Conf {
     crate::ui::window_config()
@@ -13,7 +12,7 @@ fn window_config() -> Conf {
 
 #[macroquad::main(window_config)]
 async fn main() {
-    let mut app = XorApp::new();
+    let mut app = ExampleApp::new();
 
     ui::start(&mut app).await;
 }
