@@ -1,49 +1,40 @@
-use glutin_window::GlutinWindow;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderEvent, UpdateEvent};
-use piston::window::WindowSettings;
-use piston::{ButtonEvent, MouseCursorEvent};
+use macroquad::window::Conf;
 
-use crate::state::State;
+use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable, event::EventHandler};
 
-fn make_window() -> GlutinWindow {
-    WindowSettings::new("NEAT Experiments", (800, 600))
-        .samples(4)
-        .build()
-        .expect("Unable to create Glutin window")
+pub fn window_config() -> Conf {
+    Conf {
+        window_title: "NEAT Experiments".to_string(),
+        window_width: 800,
+        window_height: 600,
+        high_dpi: true,
+        fullscreen: false,
+        sample_count: 1,
+        window_resizable: true,
+        icon: None, // TODO
+        ..Default::default()
+    }
 }
 
-pub fn start(state: &mut State) {
-    // Create a new window and backend graphics library instance
-    let mut window = make_window();
-    let mut gl = GlGraphics::new(OpenGL::V3_2);
+pub async fn start<A: Renderable + Updatable + EventHandler>(app: &mut A) {
+    // Background color for clearing the screen between frames
+    let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
 
-    // Start the event loop
-    let mut events = Events::new(EventSettings::new());
-    while let Some(event) = events.next(&mut window) {
-        // Tick
-        if let Some(args) = event.update_args() {
-            state.tick(args.dt * 1000.0);
-        }
+    loop {
+        // Handle events
+        // TODO
 
-        // Render
-        if let Some(args) = event.render_args() {
-            let (width, height) = (args.window_size[0], args.window_size[1]);
+        // Update the app
+        let dt = macroquad::time::get_frame_time() as f64;
+        app.update(dt);
 
-            gl.draw(args.viewport(), |mut ctx, mut gl| {
-                state.render(&mut ctx, &mut gl, width, height);
-            });
-        }
+        // Clear the screen between frames
+        macroquad::window::clear_background(bg_color);
 
-        // Mouse position
-        if let Some(args) = event.mouse_cursor_args() {
-            state.event_mouse_pos(args[0], args[1]);
-        }
+        // Render the app
+        app.render(RenderArgs::new(), 0.0, 0.0, macroquad::window::screen_width() as f64, macroquad::window::screen_height() as f64);
 
-        // Button
-        if let Some(args) = event.button_args() {
-            state.event_button(&args);
-        }
+        // Await the next frame
+        macroquad::window::next_frame().await
     }
 }
