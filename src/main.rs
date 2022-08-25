@@ -1,15 +1,18 @@
-use crate::state::State;
+use macroquad::window::Conf;
+use example_app::ExampleApp;
 
-extern crate glutin_window;
-extern crate graphics;
-extern crate opengl_graphics;
-extern crate piston;
-
-mod state;
+mod renderable;
+mod updatable;
 mod ui;
+mod example_app;
 
-fn main() {
-    let mut state = State::new(80.0, 60.0, (255, 0, 255));
+fn window_config() -> Conf {
+    crate::ui::window_config()
+}
 
-    ui::start(&mut state);
+#[macroquad::main(window_config)]
+async fn main() {
+    let mut app = ExampleApp::new();
+
+    ui::start(&mut app).await;
 }
