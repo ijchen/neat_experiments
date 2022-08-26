@@ -9,5 +9,5 @@ pub trait Predictor {
     /// It is the responsibility of the implementor of this method to ensure
     /// that the length of the returned vector of predictions is the same as
     /// the expected number of outputs from the predictor
-    fn predict(&self, inputs: &Vec<f64>) -> Vec<f64>;
+    fn predict(&self, inputs: &[f64]) -> Vec<f64>;
 }

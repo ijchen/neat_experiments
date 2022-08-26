@@ -1,6 +1,6 @@
-use crate::{predictor::Predictor, renderable::Renderable};
+use crate::predictor::Predictor;
 
-pub trait Environment: Renderable {
+pub trait Environment {
     /// Returns the number of inputs given to a predictor
     fn input_count(&self) -> usize;
 
@@ -14,5 +14,5 @@ pub trait Environment: Renderable {
     /// the length of the given population vector, and that the score at some
     /// index is for the predictor at the same index of the population vector
     /// Scores should all be >= 0
-    fn evaluate_predictors<P: Predictor>(&mut self, population: &Vec<P>) -> Vec<f64>;
+    fn evaluate_predictors<P: Predictor>(&mut self, population: &[&P]) -> Vec<f64>;
 }

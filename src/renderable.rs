@@ -1,12 +1,18 @@
+use macroquad::text::Font;
+
 /// Arguments for rendering something. Exactly what these are will depend on the
 /// graphics backend - this struct is so that users of this code don't have to
 /// worry about exactly what is being passed around behind the scenes for rendering.
-pub struct RenderArgs {}
+pub struct RenderArgs {
+    pub font: Font
+}
 
 impl RenderArgs {
     /// Returns a new instance of RenderArgs with default settings
-    pub fn new() -> Self {
-        RenderArgs {}
+    pub fn new(font: Font) -> Self {
+        RenderArgs {
+            font
+        }
     }
 }
 

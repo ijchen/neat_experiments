@@ -12,7 +12,7 @@ pub enum NeuralNetworkActivationFun {
     ReLU,
     LeakyReLU(f64),
     Arctan,
-    SQNL,
+    Sqnl,
 }
 
 #[derive(Clone, Debug)]
@@ -24,7 +24,7 @@ pub struct NeuralNetworkNeuron {
 
 impl CanCrossover for NeuralNetworkNeuron {
     fn crossover(&self, other: &Self) -> Self {
-        debug_assert!(self.weights.len() == other.weights.len());
+        assert!(self.weights.len() == other.weights.len());
 
         let mut rng = rand::thread_rng();
 
@@ -104,7 +104,7 @@ impl NeuralNetworkNeuron {
             NeuralNetworkActivationFun::ReLU => f64::max(0.0, x),
             NeuralNetworkActivationFun::LeakyReLU(leak_factor) => f64::max(leak_factor * x, x),
             NeuralNetworkActivationFun::Arctan => x.atan(),
-            NeuralNetworkActivationFun::SQNL => {
+            NeuralNetworkActivationFun::Sqnl => {
                 if x < -2.0 {
                     -1.0
                 } else if x < 0.0 {
@@ -118,16 +118,14 @@ impl NeuralNetworkNeuron {
         }
     }
 
-    pub fn activate(&self, inputs: &Vec<f64>) -> f64 {
-        debug_assert!(inputs.len() == self.weights.len());
+    pub fn activate(&self, inputs: &[f64]) -> f64 {
+        assert!(inputs.len() == self.weights.len());
 
         let mut weighted_sum = 0.0;
-        for i in 0..inputs.len() {
-            weighted_sum += inputs[i] * self.weights[i];
+        for (i, input) in inputs.iter().enumerate() {
+            weighted_sum += input * self.weights[i];
         }
 
-        let activation = self.apply_activation_function(weighted_sum + self.bias);
-
-        activation
+        self.apply_activation_function(weighted_sum + self.bias)
     }
 }

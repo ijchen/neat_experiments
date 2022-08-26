@@ -1,18 +1,18 @@
 use macroquad::window::Conf;
-use example_app::ExampleApp;
+use xor_app::XorApp;
 
 mod renderable;
 mod updatable;
 mod can_crossover;
 mod can_mutate;
 mod environment;
-mod game_xor;
+mod environment_xor;
 mod genetic_population;
 mod neural_network;
 mod neural_network_neuron;
 mod predictor;
 mod ui;
-mod example_app;
+mod xor_app;
 
 fn window_config() -> Conf {
     crate::ui::window_config()
@@ -20,7 +20,7 @@ fn window_config() -> Conf {
 
 #[macroquad::main(window_config)]
 async fn main() {
-    let mut app = ExampleApp::new();
+    let mut app = XorApp::new();
 
     ui::start(&mut app).await;
 }

@@ -20,10 +20,10 @@ impl Predictor for NeuralNetwork {
         self.output_count
     }
 
-    fn predict(&self, inputs: &Vec<f64>) -> Vec<f64> {
-        debug_assert!(inputs.len() == self.input_count());
+    fn predict(&self, inputs: &[f64]) -> Vec<f64> {
+        assert!(inputs.len() == self.input_count());
 
-        let mut last_activations = inputs.clone();
+        let mut last_activations = inputs.to_vec();
 
         for layer in &self.layers {
             let mut new_last_activations = vec![];
@@ -40,11 +40,11 @@ impl Predictor for NeuralNetwork {
 }
 impl CanCrossover for NeuralNetwork {
     fn crossover(&self, other: &Self) -> Self {
-        debug_assert!(self.input_count == other.input_count);
-        debug_assert!(self.output_count == other.output_count);
-        debug_assert!(self.layers.len() == other.layers.len());
+        assert!(self.input_count == other.input_count);
+        assert!(self.output_count == other.output_count);
+        assert!(self.layers.len() == other.layers.len());
         for i in 0..self.layers.len() {
-            debug_assert!(self.layers[i].len() == other.layers[i].len());
+            assert!(self.layers[i].len() == other.layers[i].len());
         }
 
         let mut new_layers: Vec<Vec<NeuralNetworkNeuron>> = vec![];

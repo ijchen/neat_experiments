@@ -9,6 +9,7 @@ pub struct GeneticPopulation<T: CanCrossover + Predictor + CanMutate, E: Environ
     population: Vec<T>,
     environment: E,
     generation: u32,
+    prev_best: Option<T>,
 }
 
 impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<T, E> {
@@ -17,31 +18,17 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
             population,
             environment,
             generation: 0,
+            prev_best: None,
         }
     }
 
-    pub fn get_best(&mut self) -> &T {
-        debug_assert!(self.population.len() > 0);
-
-        // Evaluate the fitness of all members of the population
-        let scores = self.environment.evaluate_predictors(&self.population);
-
-        // Find the member of the population with the highest fitness
-        let mut max_fitness = scores[0];
-        let mut best = &self.population[0];
-        for i in 1..self.population.len() {
-            if scores[i] > max_fitness {
-                max_fitness = scores[i];
-                best = &self.population[i];
-            }
-        }
-
-        best
+    pub fn get_prev_best(&self) -> Option<&T> {
+        self.prev_best.as_ref()
     }
 
     pub fn advance_generation(&mut self) {
         // Evaluate the fitness of all members of the population
-        let mut scores = self.environment.evaluate_predictors(&self.population);
+        let mut scores = self.environment.evaluate_predictors(&self.population.iter().collect::<Vec<_>>());
 
         // Normalize the scores
         let total_fitness: f64 = scores.iter().sum();
@@ -62,7 +49,7 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
                 let mut running_total = 0.0;
                 let mut index = 0;
                 loop {
-                    debug_assert!(index < self.population.len());
+                    assert!(index < self.population.len());
 
                     running_total += scores[index];
 
@@ -81,7 +68,7 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
                 let mut running_total = 0.0;
                 let mut index = 0;
                 loop {
-                    debug_assert!(index < self.population.len());
+                    assert!(index < self.population.len());
 
                     running_total += scores[index];
 
@@ -106,6 +93,16 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
             new_population.push(offspring);
         }
 
+        // Save the best member of the old population
+        let mut best_score = None;
+        let old_pop = std::mem::take(&mut self.population);
+        for (member, score) in old_pop.into_iter().zip(scores) {
+            if best_score.is_none() || best_score.unwrap() < score {
+                self.prev_best = Some(member);
+                best_score = Some(score);
+            }
+        }
+
         // Begin the next generation
         self.population = new_population;
         self.generation += 1;
@@ -113,9 +110,5 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
 
     pub fn generation(&self) -> u32 {
         self.generation
-    }
-
-    pub fn environment(&self) -> &E {
-        &self.environment
     }
 }

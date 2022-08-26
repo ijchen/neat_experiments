@@ -1,4 +1,4 @@
-use macroquad::window::Conf;
+use macroquad::{window::Conf, text::load_ttf_font};
 
 use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable};
 
@@ -21,8 +21,9 @@ pub async fn start<A: Renderable + Updatable>(app: &mut A) {
     // Prepare and preload assets
     // TODO assets loading screen
     let bg_color = macroquad::color::Color::from_rgba(0, 0, 0, 255);
-    let render_args = RenderArgs::new();
-
+    let font = load_ttf_font("assets/fonts/OpenSans-Regular.ttf").await.unwrap();
+    let render_args = RenderArgs::new(font);
+    
     loop {
         // Update the app
         let dt = macroquad::time::get_frame_time() as f64;
