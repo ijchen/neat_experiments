@@ -38,12 +38,20 @@ impl Renderable for XorApp {
 
 impl Updatable for XorApp {
     fn update(&mut self, dt: f64) {
-        // Every so often, advance the generation
         const GENERATIONS_PER_SECOND: f64 = 1000.0;
         const SECONDS_PER_GENERATION: f64 = 1.0 / GENERATIONS_PER_SECOND;
+        const MAX_TIME: f64 = 1.0 / 30.0;
 
         self.elapsed += dt;
 
+        // If we're falling behind, skip generations to maintain FPS
+        if self.elapsed >= MAX_TIME {
+            let skipped_generations = ((self.elapsed - MAX_TIME) / SECONDS_PER_GENERATION).ceil() as u32;
+            self.elapsed -= skipped_generations as f64 * SECONDS_PER_GENERATION;
+            eprintln!("Can't keep up! Skipping {skipped_generations} generations");
+        }
+
+        // Advance the generation based on how much time has passed
         while self.elapsed >= SECONDS_PER_GENERATION {
             self.elapsed -= SECONDS_PER_GENERATION;
 
@@ -56,7 +64,7 @@ impl XorApp {
     pub fn new() -> Self {
         let environment = EnvironmentXor::new();
         let mut population = vec![];
-        const POPULATION_SIZE: usize = 100;
+        const POPULATION_SIZE: usize = 50;
         for _ in 0..POPULATION_SIZE {
             let nn = NeuralNetwork::new(environment.input_count(), environment.output_count(), vec![4]);
             
