@@ -37,6 +37,9 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
             .map(|score| score - min_fitness)
             .collect();
         let total_fitness: f64 = scores.iter().sum();
+        if total_fitness == 0.0 {
+            scores.fill(1.0 / self.population.len() as f64);
+        }
         scores = scores
             .into_iter()
             .map(|score| score / total_fitness)

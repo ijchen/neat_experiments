@@ -24,37 +24,26 @@ impl Environment for EnvironmentXor {
             // Overfitting is not a concern here, since the point isn't to generalize,
             // but to test the predictor's ability to learn non-linear functions
             let mut score = 0.0;
-            // Just the basic XOR
             let training_data = vec![
+                // Standard XOR
                 ([0.0, 0.0], 0.0),
                 ([0.0, 1.0], 1.0),
                 ([1.0, 0.0], 1.0),
                 ([1.0, 1.0], 0.0),
+
+                // Add this for a center point
+                // ([0.5, 0.5], 0.5),
+
+                // Edge points and corner reinforcements
+                // ([0.0, 0.0], 0.0),
+                // ([0.0, 1.0], 1.0),
+                // ([1.0, 0.0], 1.0),
+                // ([1.0, 1.0], 0.0),
+                // ([0.0, 0.5], 0.5),
+                // ([1.0, 0.5], 0.5),
+                // ([0.5, 0.0], 0.5),
+                // ([0.5, 1.0], 0.5),
             ];
-            // // XOR with center
-            // let training_data = vec![
-            //     ([0.0, 0.0], 0.0),
-            //     ([0.0, 1.0], 1.0),
-            //     ([1.0, 0.0], 1.0),
-            //     ([1.0, 1.0], 0.0),
-            //     ([0.5, 0.5], 0.5),
-            // ];
-            // // Generalizability (lots of data points)
-            // let training_data = vec![
-            //     ([0.0, 0.0], 0.0),
-            //     ([0.0, 1.0], 1.0),
-            //     ([1.0, 0.0], 1.0),
-            //     ([1.0, 1.0], 0.0),
-            //     ([0.0, 0.0], 0.0),
-            //     ([0.0, 1.0], 1.0),
-            //     ([1.0, 0.0], 1.0),
-            //     ([1.0, 1.0], 0.0),
-            //     ([0.5, 0.5], 0.5),
-            //     ([0.0, 0.5], 0.5),
-            //     ([1.0, 0.5], 0.5),
-            //     ([0.5, 0.0], 0.5),
-            //     ([0.5, 1.0], 0.5),
-            // ];
             for datum in &training_data {
                 score += 1.0 - (predictor.predict(&datum.0)[0] - datum.1).abs();
             }
