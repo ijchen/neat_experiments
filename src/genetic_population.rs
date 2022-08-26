@@ -30,11 +30,16 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
         // Evaluate the fitness of all members of the population
         let mut scores = self.environment.evaluate_predictors(&self.population.iter().collect::<Vec<_>>());
 
-        // Normalize the scores
+        // Normalize the scores to have a minimum of zero and a sum of one
+        let min_fitness = scores.iter().copied().reduce(f64::min).unwrap();
+        scores = scores
+            .into_iter()
+            .map(|score| score - min_fitness)
+            .collect();
         let total_fitness: f64 = scores.iter().sum();
         scores = scores
-            .iter_mut()
-            .map(|score| *score / total_fitness)
+            .into_iter()
+            .map(|score| score / total_fitness)
             .collect();
 
         // Produce a new population with parents from the previous population

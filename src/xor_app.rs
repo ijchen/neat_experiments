@@ -38,7 +38,7 @@ impl Renderable for XorApp {
 
 impl Updatable for XorApp {
     fn update(&mut self, dt: f64) {
-        const GENERATIONS_PER_SECOND: f64 = 1000.0;
+        const GENERATIONS_PER_SECOND: f64 = 100.0;
         const SECONDS_PER_GENERATION: f64 = 1.0 / GENERATIONS_PER_SECOND;
         const MAX_TIME: f64 = 1.0 / 30.0;
 
@@ -64,7 +64,7 @@ impl XorApp {
     pub fn new() -> Self {
         let environment = EnvironmentXor::new();
         let mut population = vec![];
-        const POPULATION_SIZE: usize = 50;
+        const POPULATION_SIZE: usize = 100;
         for _ in 0..POPULATION_SIZE {
             let nn = NeuralNetwork::new(environment.input_count(), environment.output_count(), vec![4]);
             
