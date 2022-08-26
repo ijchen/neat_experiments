@@ -106,8 +106,8 @@ impl XorApp {
                 for col in 0..resolution {
                     let coord_x = col as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
                     let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
-                    let coord_y = 1.0 - coord_y;
-                    // let brightness = y * coord_x + (1.0 - y) * (1.0 - coord_x);
+                    let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
+                    // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
                     let brightness = best.predict(&[coord_x, coord_y])[0].clamp(0.0, 1.0);
                     let color = Color::from_rgba(
                         (brightness * 255.0).round() as u8,
