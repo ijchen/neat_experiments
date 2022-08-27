@@ -1,3 +1,7 @@
+use std::f64::consts::TAU;
+
+use rand::Rng;
+
 use crate::{environment::Environment, predictor::Predictor};
 
 pub struct EnvironmentXor {}
@@ -24,26 +28,14 @@ impl Environment for EnvironmentXor {
             // Overfitting is not a concern here, since the point isn't to generalize,
             // but to test the predictor's ability to learn non-linear functions
             let mut score = 0.0;
-            let training_data = vec![
-                // Standard XOR
-                ([0.0, 0.0], 0.0),
-                ([0.0, 1.0], 1.0),
-                ([1.0, 0.0], 1.0),
-                ([1.0, 1.0], 0.0),
-
-                // Add this for a center point
-                // ([0.5, 0.5], 0.5),
-
-                // Edge points and corner reinforcement
-                // ([0.0, 0.0], 0.0),
-                // ([0.0, 1.0], 1.0),
-                // ([1.0, 0.0], 1.0),
-                // ([1.0, 1.0], 0.0),
-                // ([0.0, 0.5], 0.5),
-                // ([1.0, 0.5], 0.5),
-                // ([0.5, 0.0], 0.5),
-                // ([0.5, 1.0], 0.5),
-            ];
+            let mut rng = rand::thread_rng();
+            let mut training_data = vec![];
+            for _ in 0..100 {
+                let x: f64 = rng.gen_range(0.0..=1.0);
+                let y: f64 = rng.gen_range(0.0..=1.0);
+                let z: f64 = if (x - 0.5).powi(2) + (y - 0.5).powi(2) <= TAU.recip() { 1.0 } else { 0.0 };
+                training_data.push(([x, y], z));
+            }
             for datum in &training_data {
                 score += 1.0 - (predictor.predict(&datum.0)[0] - datum.1).abs();
             }
