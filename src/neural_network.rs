@@ -82,6 +82,7 @@ impl CanMutate for NeuralNetwork {
 
 impl Renderable for NeuralNetwork {
     fn render(&self, _args: &crate::renderable::RenderArgs, x: f64, y: f64, width: f64, height: f64) {
+        // TODO Profile and optimize, visually clean up code, improve readability
         fn map(x: f64, a1: f64, b1: f64, a2: f64, b2: f64) -> f64 {
             assert!(b1 != a1);
 
@@ -89,7 +90,7 @@ impl Renderable for NeuralNetwork {
         }
 
         fn lerp_color(c1: (u8, u8, u8), c2: (u8, u8, u8), frac: f64) -> (u8, u8, u8) {
-            assert!(0.0 <= frac && frac <= 1.0);
+            assert!((0.0..=1.0).contains(&frac));
 
             (
                 (c1.0 as f64 * frac + c2.0 as f64 * (1.0 - frac)).round() as u8,
@@ -104,10 +105,10 @@ impl Renderable for NeuralNetwork {
         let layer_dist = width / (self.layers.len() + 2) as f64;
         let max_neuron_count = self.layers.iter().map(|layer| layer.len()).max().unwrap() as f64;
         let neuron_dist: f64 = height / (max_neuron_count + 1.0);
-        let min_network_weight = self.layers.iter().flatten().map(|neuron| neuron.weights()).flatten().map(|x| *x).reduce(f64::min).unwrap();
-        let max_network_weight = self.layers.iter().flatten().map(|neuron| neuron.weights()).flatten().map(|x| *x).reduce(f64::max).unwrap();
-        let min_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).map(|x| *x).reduce(f64::min).unwrap();
-        let max_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).map(|x| *x).reduce(f64::max).unwrap();
+        let min_network_weight = self.layers.iter().flatten().flat_map(|neuron| neuron.weights()).copied().reduce(f64::min).unwrap();
+        let max_network_weight = self.layers.iter().flatten().flat_map(|neuron| neuron.weights()).copied().reduce(f64::max).unwrap();
+        let min_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).copied().reduce(f64::min).unwrap();
+        let max_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).copied().reduce(f64::max).unwrap();
         let max_weight_abs = f64::max(min_network_weight.abs(), max_network_weight.abs());
         let max_bias_abs = f64::max(min_network_bias.abs(), max_network_bias.abs());
 
