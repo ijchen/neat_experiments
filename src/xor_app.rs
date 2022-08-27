@@ -20,12 +20,12 @@ impl Renderable for XorApp {
         let env_h = height;
         self.render_environment(args, env_x, env_y, env_w, env_h);
 
-        // Draw the population
+        // Draw the model
         let pop_x = env_x + env_w;
         let pop_y = env_y;
         let pop_w = width - env_w;
         let pop_h = height / 2.0;
-        self.render_population(args, pop_x, pop_y, pop_w, pop_h);
+        self.render_model(args, pop_x, pop_y, pop_w, pop_h);
 
         // Draw the infomation pane
         let info_x = env_x + env_w;
@@ -125,33 +125,25 @@ impl XorApp {
         };
     }
 
-    fn render_population(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
-        use macroquad::prelude::*;
-
-        // Background
-        let fill = Color::from_rgba(255, 127, 0, 255);
-        draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
-    }
-
-    fn render_info_pane(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
+    fn render_model(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
 
         // Background
         let fill = Color::from_rgba(0, 0, 0, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
 
-        // Generation text
-        let elapsed_text = format!("Generation: {}", self.population.generation());
-        let padding = width as f32 / 25.0;
-        let font_size = f64::max(8.0, width / 20.0) as f32;
-        let text_params = TextParams {
-            font: args.font,
-            font_size: font_size.round() as u16,
-            font_scale: 1.0,
-            font_scale_aspect: 1.0,
-            color: Color::from_rgba(255, 255, 255, 255),
-        };
-        draw_text_ex(&elapsed_text, x as f32 + padding, y as f32 + height as f32 - padding, text_params);
+        // Render the neural network
+        if let Some(best) = self.population.get_prev_best() {
+            best.render(args, x, y, width, height);
+        }
+    }
+
+    fn render_info_pane(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
+        use macroquad::prelude::*;
+
+        // Background
+        let fill = Color::from_rgba(255, 255, 255, 255);
+        draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
         
         // Fitness text
         if let Some(best) = self.population.get_prev_best() {
@@ -164,9 +156,22 @@ impl XorApp {
                 font_size: font_size.round() as u16,
                 font_scale: 1.0,
                 font_scale_aspect: 1.0,
-                color: Color::from_rgba(255, 255, 255, 255),
+                color: Color::from_rgba(0, 0, 0, 255),
             };
             draw_text_ex(&elapsed_text, x as f32 + padding, y as f32 + height as f32 - padding * 2.0 - font_size as f32, text_params);
         };
+
+        // Generation text
+        let elapsed_text = format!("Generation: {}", self.population.generation());
+        let padding = width as f32 / 25.0;
+        let font_size = f64::max(8.0, width / 20.0) as f32;
+        let text_params = TextParams {
+            font: args.font,
+            font_size: font_size.round() as u16,
+            font_scale: 1.0,
+            font_scale_aspect: 1.0,
+            color: Color::from_rgba(0, 0, 0, 255),
+        };
+        draw_text_ex(&elapsed_text, x as f32 + padding, y as f32 + height as f32 - padding, text_params);
     }
 }

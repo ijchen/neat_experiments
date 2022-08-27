@@ -89,6 +89,14 @@ impl NeuralNetworkNeuron {
         }
     }
 
+    pub fn bias(&self) -> &f64 {
+        &self.bias
+    }
+
+    pub fn weights(&self) -> &[f64] {
+        &self.weights
+    }
+
     fn apply_activation_function(&self, x: f64) -> f64 {
         match self.activation_function {
             NeuralNetworkActivationFun::Identity => x,

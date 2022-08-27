@@ -34,7 +34,7 @@ impl Environment for EnvironmentXor {
                 // Add this for a center point
                 // ([0.5, 0.5], 0.5),
 
-                // Edge points and corner reinforcements
+                // Edge points and corner reinforcement
                 // ([0.0, 0.0], 0.0),
                 // ([0.0, 1.0], 1.0),
                 // ([1.0, 0.0], 1.0),
