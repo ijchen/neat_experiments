@@ -88,7 +88,6 @@ impl Renderable for NeuralNetwork {
             (x - a1) / (b1 - a1) * (b2 - a2) + a2
         }
 
-        // TODO Color code connections and neurons based on weights and biases
         fn lerp_color(c1: (u8, u8, u8), c2: (u8, u8, u8), frac: f64) -> (u8, u8, u8) {
             assert!(0.0 <= frac && frac <= 1.0);
 
