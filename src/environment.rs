@@ -13,6 +13,5 @@ pub trait Environment {
     /// that the length of the returned vector of fitness scores is the same as
     /// the length of the given population vector, and that the score at some
     /// index is for the predictor at the same index of the population vector
-    /// Scores should all be >= 0
     fn evaluate_predictors<P: Predictor>(&mut self, population: &[&P]) -> Vec<f64>;
 }
