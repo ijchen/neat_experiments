@@ -5,11 +5,18 @@ use crate::{
     predictor::Predictor,
 };
 
+pub struct Connection {
+    pub innovation_number: usize, 
+    in_node: usize, 
+    out_node: usize, 
+}
+
 pub struct GeneticPopulation<T: CanCrossover + Predictor + CanMutate, E: Environment> {
     population: Vec<T>,
     environment: E,
     generation: u32,
     prev_best: Option<T>,
+    existing_connections: Option<Vec<Connection>>
 }
 
 impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<T, E> {

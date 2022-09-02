@@ -3,10 +3,19 @@ use macroquad::{shapes::{draw_circle, draw_line}, prelude::Color};
 use crate::{
     can_crossover::CanCrossover,
     can_mutate::CanMutate,
-    neural_network_neuron::{NeuralNetworkActivationFun, NeuralNetworkNeuron},
+    neural_network_neuron::{NeuralNetworkActivationFun, NeuralNetworkNeuron, ConnectionGene},
     predictor::Predictor, renderable::Renderable,
 };
 #[derive(Clone)]
+
+pub struct Genome {
+    connection_genes: Vec<ConnectionGene>, 
+}
+
+impl CanCrossover for Genome {
+    fn crossover(&self, other: &Self) -> Self {
+        todo!(); 
+    } }
 pub struct NeuralNetwork {
     input_count: usize,
     output_count: usize,
