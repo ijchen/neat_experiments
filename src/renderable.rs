@@ -4,15 +4,13 @@ use macroquad::text::Font;
 /// graphics backend - this struct is so that users of this code don't have to
 /// worry about exactly what is being passed around behind the scenes for rendering.
 pub struct RenderArgs {
-    pub font: Font
+    pub font: Font,
 }
 
 impl RenderArgs {
     /// Returns a new instance of RenderArgs with default settings
     pub fn new(font: Font) -> Self {
-        RenderArgs {
-            font
-        }
+        RenderArgs { font }
     }
 }
 

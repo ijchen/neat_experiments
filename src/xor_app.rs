@@ -1,14 +1,22 @@
-use crate::{renderable::{Renderable, RenderArgs}, updatable::Updatable, genetic_population::GeneticPopulation, neural_network::NeuralNetwork, environment_xor::EnvironmentXor, environment::Environment, predictor::Predictor};
+use crate::{
+    environment::Environment,
+    environment_xor::EnvironmentXor,
+    genetic_population::GeneticPopulation,
+    neural_network::NeuralNetwork,
+    predictor::Predictor,
+    renderable::{RenderArgs, Renderable},
+    updatable::Updatable,
+};
 
 pub struct XorApp {
     elapsed: f64,
-    population: GeneticPopulation<NeuralNetwork, EnvironmentXor>
+    population: GeneticPopulation<NeuralNetwork, EnvironmentXor>,
 }
 
 impl Renderable for XorApp {
     fn render(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
-        
+
         // Draw the background
         let fill = Color::from_rgba(255, 255, 255, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
@@ -46,7 +54,8 @@ impl Updatable for XorApp {
 
         // If we're falling behind, skip generations to maintain FPS
         if self.elapsed >= MAX_TIME {
-            let skipped_generations = ((self.elapsed - MAX_TIME) / SECONDS_PER_GENERATION).ceil() as u32;
+            let skipped_generations =
+                ((self.elapsed - MAX_TIME) / SECONDS_PER_GENERATION).ceil() as u32;
             self.elapsed -= skipped_generations as f64 * SECONDS_PER_GENERATION;
             eprintln!("Can't keep up! Skipping {skipped_generations} generations");
         }
@@ -66,22 +75,27 @@ impl XorApp {
         let mut population = vec![];
         const POPULATION_SIZE: usize = 100;
         for _ in 0..POPULATION_SIZE {
-            let nn = NeuralNetwork::new(environment.input_count(), environment.output_count(), vec![4]);
-            
+            let nn = NeuralNetwork::new(
+                environment.input_count(),
+                environment.output_count(),
+                vec![4],
+            );
+
             population.push(nn);
         }
 
-        let genetic_population: GeneticPopulation<NeuralNetwork, EnvironmentXor> = GeneticPopulation::new(population, environment);
+        let genetic_population: GeneticPopulation<NeuralNetwork, EnvironmentXor> =
+            GeneticPopulation::new(population, environment);
 
         XorApp {
             elapsed: 0.0,
-            population: genetic_population
+            population: genetic_population,
         }
     }
 
     fn render_environment(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
         use macroquad::prelude::*;
-        
+
         // Draw a white background
         let fill = Color::from_rgba(255, 255, 255, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
@@ -107,19 +121,25 @@ impl XorApp {
                     let coord_x = col as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
                     let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
                     let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
-                    // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
+                                                 // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
                     let brightness = best.predict(&[coord_x, coord_y])[0].clamp(0.0, 1.0);
                     let color = Color::from_rgba(
                         (brightness * 255.0).round() as u8,
                         (brightness * 255.0).round() as u8,
                         (brightness * 255.0).round() as u8,
-                        255
+                        255,
                     );
 
                     let rect_x = x + cell_w * col as f64;
                     let rect_y = y + cell_h * row as f64;
 
-                    draw_rectangle(rect_x as f32, rect_y as f32, cell_w as f32, cell_h as f32, color);
+                    draw_rectangle(
+                        rect_x as f32,
+                        rect_y as f32,
+                        cell_w as f32,
+                        cell_h as f32,
+                        color,
+                    );
                 }
             }
         };
@@ -144,7 +164,7 @@ impl XorApp {
         // Background
         let fill = Color::from_rgba(255, 255, 255, 255);
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
-        
+
         // Fitness text
         if let Some(best) = self.population.get_prev_best() {
             let score = EnvironmentXor::new().evaluate_predictors(&[best])[0];
@@ -158,7 +178,12 @@ impl XorApp {
                 font_scale_aspect: 1.0,
                 color: Color::from_rgba(0, 0, 0, 255),
             };
-            draw_text_ex(&elapsed_text, x as f32 + padding, y as f32 + height as f32 - padding * 2.0 - font_size as f32, text_params);
+            draw_text_ex(
+                &elapsed_text,
+                x as f32 + padding,
+                y as f32 + height as f32 - padding * 2.0 - font_size as f32,
+                text_params,
+            );
         };
 
         // Generation text
@@ -172,6 +197,11 @@ impl XorApp {
             font_scale_aspect: 1.0,
             color: Color::from_rgba(0, 0, 0, 255),
         };
-        draw_text_ex(&elapsed_text, x as f32 + padding, y as f32 + height as f32 - padding, text_params);
+        draw_text_ex(
+            &elapsed_text,
+            x as f32 + padding,
+            y as f32 + height as f32 - padding,
+            text_params,
+        );
     }
 }

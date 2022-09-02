@@ -6,9 +6,9 @@ use crate::{
 };
 
 pub struct Connection {
-    pub innovation_number: usize, 
-    in_node: usize, 
-    out_node: usize, 
+    pub innovation_number: usize,
+    in_node: usize,
+    out_node: usize,
 }
 
 pub struct GeneticPopulation<T: CanCrossover + Predictor + CanMutate, E: Environment> {
@@ -16,7 +16,7 @@ pub struct GeneticPopulation<T: CanCrossover + Predictor + CanMutate, E: Environ
     environment: E,
     generation: u32,
     prev_best: Option<T>,
-    existing_connections: Option<Vec<Connection>>
+    existing_connections: Option<Vec<Connection>>,
 }
 
 impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<T, E> {
@@ -26,6 +26,7 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
             environment,
             generation: 0,
             prev_best: None,
+            existing_connections: None,
         }
     }
 
@@ -35,7 +36,9 @@ impl<T: CanCrossover + Predictor + CanMutate, E: Environment> GeneticPopulation<
 
     pub fn advance_generation(&mut self) {
         // Evaluate the fitness of all members of the population
-        let mut scores = self.environment.evaluate_predictors(&self.population.iter().collect::<Vec<_>>());
+        let mut scores = self
+            .environment
+            .evaluate_predictors(&self.population.iter().collect::<Vec<_>>());
 
         // Normalize the scores to have a minimum of zero and a sum of one
         let min_fitness = scores.iter().copied().reduce(f64::min).unwrap();

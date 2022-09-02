@@ -1,21 +1,62 @@
-use macroquad::{shapes::{draw_circle, draw_line}, prelude::Color};
+use macroquad::{
+    prelude::Color,
+    shapes::{draw_circle, draw_line},
+};
+use std::cmp::max;
+use std::cmp::min;
+use std::collections::HashMap; 
+
 
 use crate::{
     can_crossover::CanCrossover,
     can_mutate::CanMutate,
-    neural_network_neuron::{NeuralNetworkActivationFun, NeuralNetworkNeuron, ConnectionGene},
-    predictor::Predictor, renderable::Renderable,
+    neural_network_neuron::{ConnectionGene, NeuralNetworkActivationFun, NeuralNetworkNeuron},
+    predictor::Predictor,
+    renderable::Renderable,
 };
 #[derive(Clone)]
 
 pub struct Genome {
-    connection_genes: Vec<ConnectionGene>, 
+    connection_genes: HashMap<usize, ConnectionGene>,
+    max_innovation: usize, 
+    fitness_score: f64, //confirm this is the right type... may need to incorporate predictor
 }
 
 impl CanCrossover for Genome {
     fn crossover(&self, other: &Self) -> Self {
-        todo!(); 
-    } }
+        let excess_index = min(self.max_innovation, other.max_innovation); 
+
+        let new_connections: HashMap<usize, ConnectionGene> = HashMap::new();
+
+        //Loops through possible innovation numbers up until the highest innovation number for 
+        //the parent whose max innovation number is lower (i.e., up until the start of any excess genes)
+        //If both parents have gene, one is randomly chosen to give to offspring. If only one parent has it, child 
+        //gets gene from that parent
+        for i in 1..excess_index {
+            if self.connection_genes.contains_key(&i) && other.connection_genes.contains_key(&i){
+                 //crossover at gene level 
+                 todo!(); 
+            }
+            else if self.connection_genes.contains_key(&i) {
+                new_connections.insert(i, self.connection_genes[&i]); 
+            }
+            else if other.connection_genes.contains_key(&i) {
+                new_connections.insert(i, other.connection_genes[&i]); 
+            }
+        }
+
+      
+        }
+        todo!();
+    }
+}
+
+impl CanMutate for Genome {
+    fn mutate(&mut self) {
+        //if connection doesn't exist, innov # must increase
+        todo!();
+    }
+}
 pub struct NeuralNetwork {
     input_count: usize,
     output_count: usize,
@@ -90,7 +131,14 @@ impl CanMutate for NeuralNetwork {
 }
 
 impl Renderable for NeuralNetwork {
-    fn render(&self, _args: &crate::renderable::RenderArgs, x: f64, y: f64, width: f64, height: f64) {
+    fn render(
+        &self,
+        _args: &crate::renderable::RenderArgs,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    ) {
         // TODO Profile and optimize, visually clean up code, improve readability
         fn map(x: f64, a1: f64, b1: f64, a2: f64, b2: f64) -> f64 {
             assert!(b1 != a1);
@@ -114,10 +162,38 @@ impl Renderable for NeuralNetwork {
         let layer_dist = width / (self.layers.len() + 2) as f64;
         let max_neuron_count = self.layers.iter().map(|layer| layer.len()).max().unwrap() as f64;
         let neuron_dist: f64 = height / (max_neuron_count + 1.0);
-        let min_network_weight = self.layers.iter().flatten().flat_map(|neuron| neuron.weights()).copied().reduce(f64::min).unwrap();
-        let max_network_weight = self.layers.iter().flatten().flat_map(|neuron| neuron.weights()).copied().reduce(f64::max).unwrap();
-        let min_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).copied().reduce(f64::min).unwrap();
-        let max_network_bias = self.layers.iter().flatten().map(|neuron| neuron.bias()).copied().reduce(f64::max).unwrap();
+        let min_network_weight = self
+            .layers
+            .iter()
+            .flatten()
+            .flat_map(|neuron| neuron.weights())
+            .copied()
+            .reduce(f64::min)
+            .unwrap();
+        let max_network_weight = self
+            .layers
+            .iter()
+            .flatten()
+            .flat_map(|neuron| neuron.weights())
+            .copied()
+            .reduce(f64::max)
+            .unwrap();
+        let min_network_bias = self
+            .layers
+            .iter()
+            .flatten()
+            .map(|neuron| neuron.bias())
+            .copied()
+            .reduce(f64::min)
+            .unwrap();
+        let max_network_bias = self
+            .layers
+            .iter()
+            .flatten()
+            .map(|neuron| neuron.bias())
+            .copied()
+            .reduce(f64::max)
+            .unwrap();
         let max_weight_abs = f64::max(min_network_weight.abs(), max_network_weight.abs());
         let max_bias_abs = f64::max(min_network_bias.abs(), max_network_bias.abs());
 
@@ -126,28 +202,58 @@ impl Renderable for NeuralNetwork {
             let layer_x = x + (layer_index as f64 + 2.0) * layer_dist;
             let layer_neuron_count = layer.len();
             for (neuron_index, neuron) in layer.iter().enumerate() {
-                let neuron_y = y + (neuron_index as f64 + 1.0 + (max_neuron_count - layer_neuron_count as f64) / 2.0) * neuron_dist;
+                let neuron_y = y
+                    + (neuron_index as f64
+                        + 1.0
+                        + (max_neuron_count - layer_neuron_count as f64) / 2.0)
+                        * neuron_dist;
                 let prev_x = layer_x - layer_dist;
-                
+
                 // Connections to previous neurons
                 for (weight_index, weight) in neuron.weights().iter().enumerate() {
-                    let prev_y = y + (weight_index as f64 + 1.0 + (max_neuron_count - neuron.weights().len() as f64) / 2.0) * neuron_dist;
+                    let prev_y = y
+                        + (weight_index as f64
+                            + 1.0
+                            + (max_neuron_count - neuron.weights().len() as f64) / 2.0)
+                            * neuron_dist;
 
-                    let thickness: f64 = map(weight.abs(), 0.0, max_weight_abs, 0.0, f64::min(width, height) / 50.0);
+                    let thickness: f64 = map(
+                        weight.abs(),
+                        0.0,
+                        max_weight_abs,
+                        0.0,
+                        f64::min(width, height) / 50.0,
+                    );
                     let color_frac = map(*weight, -max_weight_abs, max_weight_abs, 0.0, 1.0);
                     let color = lerp_color(GREEN, RED, color_frac);
-                    draw_line(prev_x as f32, prev_y as f32, layer_x as f32, neuron_y as f32, thickness as f32, Color::from_rgba(color.0, color.1, color.2, 255))
+                    draw_line(
+                        prev_x as f32,
+                        prev_y as f32,
+                        layer_x as f32,
+                        neuron_y as f32,
+                        thickness as f32,
+                        Color::from_rgba(color.0, color.1, color.2, 255),
+                    )
                 }
             }
         }
-    
+
         // Render input layer nodes
         let node_rad: f64 = f64::min(width, height) / 30.0;
         let input_layer_x = x + layer_dist;
         let input_layer_neuron_count = self.input_count;
         for neuron_index in 0..input_layer_neuron_count {
-            let neuron_y = y + (neuron_index as f64 + 1.0 + (max_neuron_count - input_layer_neuron_count as f64) / 2.0) * neuron_dist;
-            draw_circle(input_layer_x as f32, neuron_y as f32, node_rad as f32, Color::from_rgba(127, 127, 127, 255));
+            let neuron_y = y
+                + (neuron_index as f64
+                    + 1.0
+                    + (max_neuron_count - input_layer_neuron_count as f64) / 2.0)
+                    * neuron_dist;
+            draw_circle(
+                input_layer_x as f32,
+                neuron_y as f32,
+                node_rad as f32,
+                Color::from_rgba(127, 127, 127, 255),
+            );
         }
 
         // Hidden/output layer nodes
@@ -155,12 +261,21 @@ impl Renderable for NeuralNetwork {
             let layer_x = x + (layer_index as f64 + 2.0) * layer_dist;
             let layer_neuron_count = layer.len();
             for (neuron_index, neuron) in layer.iter().enumerate() {
-                let neuron_y = y + (neuron_index as f64 + 1.0 + (max_neuron_count - layer_neuron_count as f64) / 2.0) * neuron_dist;
-                
+                let neuron_y = y
+                    + (neuron_index as f64
+                        + 1.0
+                        + (max_neuron_count - layer_neuron_count as f64) / 2.0)
+                        * neuron_dist;
+
                 // Neuron
                 let color_frac = map(*neuron.bias(), -max_bias_abs, max_bias_abs, 0.0, 1.0);
                 let color = lerp_color(GREEN, RED, color_frac);
-                draw_circle(layer_x as f32, neuron_y as f32, node_rad as f32, Color::from_rgba(color.0, color.1, color.2, 255));
+                draw_circle(
+                    layer_x as f32,
+                    neuron_y as f32,
+                    node_rad as f32,
+                    Color::from_rgba(color.0, color.1, color.2, 255),
+                );
             }
         }
     }
@@ -193,5 +308,12 @@ impl NeuralNetwork {
             output_count,
             layers,
         }
+    }
+}
+
+impl Genome {
+    //only call if new innov added 
+    fn update_max_innovation(&mut self){
+        self.max_innovation = self.connection_genes.keys().max()
     }
 }

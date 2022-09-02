@@ -1,8 +1,6 @@
 use macroquad::window::Conf;
 use xor_app::XorApp;
 
-mod renderable;
-mod updatable;
 mod can_crossover;
 mod can_mutate;
 mod environment;
@@ -11,7 +9,9 @@ mod genetic_population;
 mod neural_network;
 mod neural_network_neuron;
 mod predictor;
+mod renderable;
 mod ui;
+mod updatable;
 mod xor_app;
 
 fn window_config() -> Conf {

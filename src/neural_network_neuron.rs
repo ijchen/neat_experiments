@@ -18,13 +18,12 @@ pub enum NeuralNetworkActivationFun {
 #[derive(Clone, Debug)]
 
 pub struct ConnectionGene {
-    pub innovation_number: usize, 
-    in_node: usize, //may change nodes to their own struct but seems unnecessary rn 
-    out_node: usize, 
-    weight: f64, 
-    enabled: bool, 
+    //pub innovation_number: usize,
+    in_node: usize, //may change nodes to their own struct but seems unnecessary rn
+    out_node: usize,
+    weight: f64,
+    enabled: bool,
 }
-
 
 pub struct NeuralNetworkNeuron {
     weights: Vec<f64>,
