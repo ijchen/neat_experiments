@@ -19,7 +19,7 @@ use crate::{
 pub struct Genome {
     connection_genes: HashMap<usize, ConnectionGene>,
     max_innovation: usize, 
-    fitness_score: f64, //confirm this is the right type... may need to incorporate predictor
+    fitness_score: Option<f64>, //confirm this is the right type... may need to incorporate predictor
 }
 
 impl CanCrossover for Genome {
@@ -65,15 +65,13 @@ impl CanCrossover for Genome {
         }
 
         Genome {
-            connection_genes: HashMap<usize, ConnectionGene>,
-            max_innovation: usize, 
-            fitness_score: f64, //confirm this is the right type... may need to incorporate predictor
+            connection_genes: new_connections,
+            max_innovation: max(self.max_innovation, other.max_innovation), 
+            fitness_score: None, //confirm this is the right type... may need to incorporate predictor
         }
       
         }
-        todo!();
     }
-}
 
 impl CanMutate for Genome {
     fn mutate(&mut self) {
