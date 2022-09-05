@@ -4,8 +4,8 @@ use macroquad::{
 };
 use std::cmp::max;
 use std::cmp::min;
-use std::collections::HashMap; 
-
+use std::collections::HashMap;
+use rand::Rng;
 
 use crate::{
     can_crossover::CanCrossover,
@@ -18,65 +18,76 @@ use crate::{
 
 pub struct Genome {
     connection_genes: HashMap<usize, ConnectionGene>,
-    max_innovation: usize, 
+    max_innovation: usize,
     fitness_score: Option<f64>, //confirm this is the right type... may need to incorporate predictor
 }
 
 impl CanCrossover for Genome {
     fn crossover(&self, other: &Self) -> Self {
-        let excess_index = min(self.max_innovation, other.max_innovation); 
+        let excess_index = min(self.max_innovation, other.max_innovation);
 
         let new_connections: HashMap<usize, ConnectionGene> = HashMap::new();
 
-        //Loops through possible innovation numbers up until the highest innovation number for 
+        //Loops through possible innovation numbers up until the highest innovation number for
         //the parent whose max innovation number is lower (i.e., up until the start of any excess genes)
-        //If both parents have gene, one is randomly chosen to give to offspring. If only one parent has it, child 
+        //If both parents have gene, one is randomly chosen to give to offspring. If only one parent has it, child
         //gets gene from that parent
         for i in 1..excess_index {
-            if self.connection_genes.contains_key(&i) && other.connection_genes.contains_key(&i){
-
-                //choose randomly between parents for which version of gene to pass 
+            if self.connection_genes.contains_key(&i) && other.connection_genes.contains_key(&i) {
+                //choose randomly between parents for which version of gene to pass
                 let inherited_gene = {
-                    match rand::thread_rng().gen_bool(0.5){
-                        0 => self.connection_genes[&i], 
+                    match rand::thread_rng().gen_bool(0.5) {
+                        0 => self.connection_genes[&i],
                         1 => other.connection_genes[&i],
-                    } }; 
-                
-                new_connections.insert(i, inherited_gene);     
-            }
-            else if self.connection_genes.contains_key(&i) {
-                new_connections.insert(i, self.connection_genes[&i]); 
-            }
-            else if other.connection_genes.contains_key(&i) {
-                new_connections.insert(i, other.connection_genes[&i]); 
+                    }
+                };
+
+                new_connections.insert(i, inherited_gene);
+            } else if self.connection_genes.contains_key(&i) {
+                new_connections.insert(i, self.connection_genes[&i]);
+            } else if other.connection_genes.contains_key(&i) {
+                new_connections.insert(i, other.connection_genes[&i]);
             }
         }
 
         //Deals with excess genes (this logic could defintely be cleaned and tightened)
-        if (self.max_innovation > other.max_innovation) && (self.fitness_score >= other.fitness_score) {
+        if (self.max_innovation > other.max_innovation)
+            && (self.fitness_score >= other.fitness_score)
+        {
             for i in excess_index..self.max_innovation {
-                new_connections.insert(i, self.connection_genes[&i]); 
+                new_connections.insert(i, self.connection_genes[&i]);
             }
-        }
-        else if (other.max_innovation > self.max_innovation) && (other.fitness_score >= self.fitness_score){
+        } else if (other.max_innovation > self.max_innovation)
+            && (other.fitness_score >= self.fitness_score)
+        {
             for i in excess_index..other.max_innovation {
-                new_connections.insert(i, other.connection_genes[&i]); 
+                new_connections.insert(i, other.connection_genes[&i]);
             }
         }
 
         Genome {
             connection_genes: new_connections,
-            max_innovation: max(self.max_innovation, other.max_innovation), 
+            max_innovation: max(self.max_innovation, other.max_innovation),
             fitness_score: None, //confirm this is the right type... may need to incorporate predictor
         }
-      
-        }
     }
+}
 
 impl CanMutate for Genome {
     fn mutate(&mut self) {
         //if connection doesn't exist, innov # must increase
-        todo!();
+        const MUT_ODDS: f64 = 0.01;
+
+        self.mutate_weights(MUT_ODDS);
+        self.mutate_abilities(MUT_ODDS);
+
+        if rand::thread_rng().gen_bool(MUT_ODDS) {
+            self.add_node();
+        }
+
+        if rand::thread_rng().gen_bool(MUT_ODDS) {
+            self.add_connection();
+        }
     }
 }
 pub struct NeuralNetwork {
@@ -112,36 +123,6 @@ impl Predictor for NeuralNetwork {
         last_activations
     }
 }
-impl CanCrossover for NeuralNetwork {
-    fn crossover(&self, other: &Self) -> Self {
-        assert!(self.input_count == other.input_count);
-        assert!(self.output_count == other.output_count);
-        assert!(self.layers.len() == other.layers.len());
-        for i in 0..self.layers.len() {
-            assert!(self.layers[i].len() == other.layers[i].len());
-        }
-
-        let mut new_layers: Vec<Vec<NeuralNetworkNeuron>> = vec![];
-        for i in 0..self.layers.len() {
-            let mut layer: Vec<NeuralNetworkNeuron> = vec![];
-
-            for j in 0..self.layers[i].len() {
-                let new_neuron = self.layers[i][j].crossover(&other.layers[i][j]);
-
-                layer.push(new_neuron);
-            }
-
-            new_layers.push(layer);
-        }
-
-        NeuralNetwork {
-            input_count: self.input_count,
-            output_count: self.output_count,
-            layers: new_layers,
-        }
-    }
-}
-
 impl CanMutate for NeuralNetwork {
     fn mutate(&mut self) {
         for layer in &mut self.layers {
@@ -303,39 +284,62 @@ impl Renderable for NeuralNetwork {
     }
 }
 
-impl NeuralNetwork {
-    pub fn new(input_count: usize, output_count: usize, layer_sizes: Vec<usize>) -> Self {
-        let mut layers = vec![];
-        let mut prev_layer_size = input_count;
-        for size in layer_sizes {
-            layers.push(vec![
-                NeuralNetworkNeuron::new(
-                    prev_layer_size,
-                    NeuralNetworkActivationFun::TanH
-                );
-                size
-            ]);
-            prev_layer_size = size;
-        }
-        layers.push(vec![
-            NeuralNetworkNeuron::new(
-                prev_layer_size,
-                NeuralNetworkActivationFun::Identity
-            );
-            output_count
-        ]);
+// impl NeuralNetwork {
+//     pub fn new(input_count: usize, output_count: usize, layer_sizes: Vec<usize>) -> Self {
+//         let mut layers = vec![];
+//         let mut prev_layer_size = input_count;
+//         for size in layer_sizes {
+//             layers.push(vec![
+//                 NeuralNetworkNeuron::new(
+//                     prev_layer_size,
+//                     NeuralNetworkActivationFun::TanH
+//                 );
+//                 size
+//             ]);
+//             prev_layer_size = size;
+//         }
+//         layers.push(vec![
+//             NeuralNetworkNeuron::new(
+//                 prev_layer_size,
+//                 NeuralNetworkActivationFun::Identity
+//             );
+//             output_count
+//         ]);
 
-        NeuralNetwork {
-            input_count,
-            output_count,
-            layers,
-        }
-    }
-}
+//         NeuralNetwork {
+//             input_count,
+//             output_count,
+//             layers,
+//         }
+//     }
+// }
 
 impl Genome {
-    //only call if new innov added 
-    fn update_max_innovation(&mut self){
-        self.max_innovation = self.connection_genes.keys().max()
+    fn mutate_weights(&mut self, mutation_odds: f64) {
+        for i in self.connection_genes.keys() {
+            if rand::thread_rng().gen_bool(mutation_odds) {
+                self.connection_genes[i].mutate_weight();
+            }
+        }
+    }
+
+    fn mutate_abilities(&mut self, mutation_odds: f64) {
+        for i in self.connection_genes.keys() {
+            if rand::thread_rng().gen_bool(mutation_odds) {
+                self.connection_genes[i].mutate_ability();
+            }
+        }
+    }
+    fn add_node(&mut self) {
+        todo!();
+    }
+
+    fn add_connection(&mut self) {
+        todo!();
+    }
+
+    //only call if new innov added
+    fn update_max_innovation(&mut self) {
+        self.max_innovation = *self.connection_genes.keys().max().unwrap(); 
     }
 }

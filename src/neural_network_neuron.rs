@@ -25,6 +25,15 @@ pub struct ConnectionGene {
     enabled: bool,
 }
 
+impl ConnectionGene {
+    pub fn mutate_weight(&mut self) {
+        self.weight = rand::thread_rng().gen_range(-2.0..2.0);
+    }
+    pub fn mutate_ability(&mut self) {
+        self.enabled = !self.enabled;
+    }
+}
+
 pub struct NeuralNetworkNeuron {
     weights: Vec<f64>,
     bias: f64,

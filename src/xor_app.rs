@@ -2,7 +2,7 @@ use crate::{
     environment::Environment,
     environment_xor::EnvironmentXor,
     genetic_population::GeneticPopulation,
-    neural_network::NeuralNetwork,
+    neural_network_safe::NeuralNetwork,
     predictor::Predictor,
     renderable::{RenderArgs, Renderable},
     updatable::Updatable,
