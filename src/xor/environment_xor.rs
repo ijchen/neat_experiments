@@ -2,24 +2,11 @@ use crate::{environment::Environment, predictor::Predictor};
 
 pub struct EnvironmentXor {}
 
-impl Environment for EnvironmentXor {
-    fn input_count(&self) -> usize {
-        2
-    }
-
-    fn output_count(&self) -> usize {
-        1
-    }
-
-    fn evaluate_predictors<P: Predictor>(&mut self, population: &[&P]) -> Vec<f64> {
+impl Environment<2, 1> for EnvironmentXor {
+    fn evaluate_predictors<P: Predictor<2, 1>>(&mut self, population: &[&P]) -> [f64; 1] {
         let mut scores: Vec<f64> = vec![];
 
         for predictor in population {
-            // Ensure the predictor and this game are on the same page
-            // about how many inputs and outputs there should be
-            assert!(predictor.input_count() == self.input_count());
-            assert!(predictor.output_count() == self.output_count());
-
             // For something as simple as XOR, we can test all possible inputs
             // Overfitting is not a concern here, since the point isn't to generalize,
             // but to test the predictor's ability to learn non-linear functions
@@ -51,7 +38,7 @@ impl Environment for EnvironmentXor {
             scores.push(score);
         }
 
-        scores
+        scores.try_into().unwrap()
     }
 }
 

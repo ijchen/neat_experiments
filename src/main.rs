@@ -1,12 +1,5 @@
-mod can_crossover;
-mod can_mutate;
-mod environment;
-mod environment_xor;
 mod frontend;
-mod genetic_population;
-mod neural_network;
-mod neural_network_neuron;
-mod predictor;
+mod neat;
 mod xor;
 
 use macroquad::window::Conf;
