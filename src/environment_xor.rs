@@ -30,7 +30,6 @@ impl Environment for EnvironmentXor {
                 ([0.0, 1.0], 1.0),
                 ([1.0, 0.0], 1.0),
                 ([1.0, 1.0], 0.0),
-
                 // Add this for a center point
                 // ([0.5, 0.5], 0.5),
 

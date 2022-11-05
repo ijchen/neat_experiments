@@ -4,20 +4,18 @@ use macroquad::text::Font;
 /// graphics backend - this struct is so that users of this code don't have to
 /// worry about exactly what is being passed around behind the scenes for rendering.
 pub struct RenderArgs {
-    pub font: Font
+    pub font: Font,
 }
 
 impl RenderArgs {
-    /// Returns a new instance of RenderArgs with default settings
+    /// RenderArgs constructor
     pub fn new(font: Font) -> Self {
-        RenderArgs {
-            font
-        }
+        RenderArgs { font }
     }
 }
 
-/// A trait for the ability to render an object
+/// A trait representing the ability for something to render itself
 pub trait Renderable {
-    /// Renders the object at the given position
+    /// Renders itself at the given position
     fn render(&self, args: &RenderArgs, x: f64, y: f64, width: f64, height: f64);
 }
