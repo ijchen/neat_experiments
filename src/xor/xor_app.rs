@@ -1,10 +1,15 @@
 use crate::{
     frontend::renderable::{RenderArgs, Renderable},
     frontend::updatable::Updatable,
+    neat::population::Population,
 };
+
+use super::environment_xor::EnvironmentXor;
 
 pub struct XorApp {
     elapsed: f64,
+    population: Population<2, 1>,
+    environment: EnvironmentXor,
 }
 
 impl Renderable for XorApp {
@@ -65,7 +70,11 @@ impl Updatable for XorApp {
 
 impl XorApp {
     pub fn new() -> Self {
-        XorApp { elapsed: 0.0 }
+        XorApp {
+            elapsed: 0.0,
+            population: Population::new(),
+            environment: EnvironmentXor::new(),
+        }
     }
 
     fn render_environment(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
@@ -88,6 +97,40 @@ impl XorApp {
 
         // Render the XOR field
         // TODO
+        // if let Some(best) = prev_best {
+        {
+            let resolution = 100;
+            let cell_w = width / resolution as f64;
+            let cell_h = height / resolution as f64;
+            for row in 0..resolution {
+                for col in 0..resolution {
+                    let coord_x = col as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
+                    let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
+                    let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
+
+                    // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
+                    // let brightness = best.predict(&[coord_x, coord_y])[0].clamp(0.0, 1.0);
+                    let brightness = (coord_x + coord_y - 2.0 * coord_x * coord_y).clamp(0.0, 1.0);
+                    let color = Color::from_rgba(
+                        (brightness * 255.0).round() as u8,
+                        (brightness * 255.0).round() as u8,
+                        (brightness * 255.0).round() as u8,
+                        255,
+                    );
+
+                    let rect_x = x + cell_w * col as f64;
+                    let rect_y = y + cell_h * row as f64;
+
+                    draw_rectangle(
+                        rect_x as f32,
+                        rect_y as f32,
+                        cell_w as f32,
+                        cell_h as f32,
+                        color,
+                    );
+                }
+            }
+        };
     }
 
     fn render_model(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {

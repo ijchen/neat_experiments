@@ -6,8 +6,8 @@ pub trait Environment<const INPUTS: usize, const OUTPUTS: usize> {
     /// It is the responsibility of the implementor of this function to ensure
     /// that the score at some index in the output corresponds to the score of
     /// the predictor at the same index of the input population
-    fn evaluate_predictors<P: Predictor<INPUTS, OUTPUTS>>(
+    fn evaluate_predictors<const N: usize, P: Predictor<INPUTS, OUTPUTS>>(
         &mut self,
-        population: &[&P],
-    ) -> [f64; OUTPUTS];
+        population: &[&P; N],
+    ) -> [f64; N];
 }

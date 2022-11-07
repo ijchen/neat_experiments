@@ -1,12 +1,16 @@
-use crate::{environment::Environment, predictor::Predictor};
+use crate::{neat::environment::Environment, neat::predictor::Predictor};
 
-pub struct EnvironmentXor {}
+pub struct EnvironmentXor;
 
 impl Environment<2, 1> for EnvironmentXor {
-    fn evaluate_predictors<P: Predictor<2, 1>>(&mut self, population: &[&P]) -> [f64; 1] {
-        let mut scores: Vec<f64> = vec![];
+    fn evaluate_predictors<const N: usize, P: Predictor<2, 1>>(
+        &mut self,
+        population: &[&P; N],
+    ) -> [f64; N] {
+        // TODO *Consider* using MaybeUninit to avoid filling with zeros here
+        let mut scores: [f64; N] = [0.0; N];
 
-        for predictor in population {
+        for (i, predictor) in population.iter().enumerate() {
             // For something as simple as XOR, we can test all possible inputs
             // Overfitting is not a concern here, since the point isn't to generalize,
             // but to test the predictor's ability to learn non-linear functions
@@ -33,12 +37,12 @@ impl Environment<2, 1> for EnvironmentXor {
             for datum in &training_data {
                 score += 1.0 - (predictor.predict(&datum.0)[0] - datum.1).abs();
             }
-            score = f64::max(score / training_data.len() as f64, 0.0);
+            score = (score / training_data.len() as f64).max(0.0);
 
-            scores.push(score);
+            scores[i] = score;
         }
 
-        scores.try_into().unwrap()
+        scores
     }
 }
 

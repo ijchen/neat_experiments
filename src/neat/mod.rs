@@ -1,2 +1,9 @@
+pub mod connection_gene;
 pub mod environment;
+pub mod genome;
+pub mod implementation_config;
+pub mod innovation_number;
+pub mod node_gene;
+pub mod node_id;
+pub mod population;
 pub mod predictor;
