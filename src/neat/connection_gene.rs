@@ -30,12 +30,12 @@ impl ConnectionGene {
     }
 
     /// Returns the NodeID of the node this ConnectionGene is coming from
-    pub fn from_node(&self) -> NodeID {
+    pub fn get_from_node(&self) -> NodeID {
         self.from_node
     }
 
     /// Returns the NodeID of the node this ConnectionGene is going to
-    pub fn to_node(&self) -> NodeID {
+    pub fn get_to_node(&self) -> NodeID {
         self.to_node
     }
 

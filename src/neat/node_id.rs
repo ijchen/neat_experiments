@@ -1,7 +1,8 @@
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct NodeID(u64);
 
 /// A generator for unique `NodeID`s
+#[derive(Debug)]
 pub struct NodeIDGenerator {
     curr: u64,
 }

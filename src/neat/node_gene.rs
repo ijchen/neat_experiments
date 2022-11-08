@@ -1,6 +1,6 @@
 use crate::neat::node_id::NodeID;
 
-use super::innovation_number::InnovationNumber;
+use super::implementation_config;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ActivationFunction {
@@ -11,7 +11,7 @@ pub enum ActivationFunction {
     Arctan,
     Relu,
     LeakyRelu(f64),
-    SQNL,
+    Sqnl,
 }
 
 impl ActivationFunction {
@@ -46,7 +46,7 @@ impl ActivationFunction {
                     x * leak_factor
                 }
             }
-            Self::SQNL => {
+            Self::Sqnl => {
                 if x < -2.0 {
                     -1.0
                 } else if x > 2.0 {
@@ -59,20 +59,37 @@ impl ActivationFunction {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum NodeGeneKind {
+    Input,
+    Hidden,
+    Output,
+}
+
 #[derive(Clone, Debug)]
 pub struct NodeGene {
     id: NodeID,
     bias: f64,
     activation_function: ActivationFunction,
+    kind: NodeGeneKind,
 }
 
 impl NodeGene {
     /// Constructs a new NodeGene
-    pub fn new(id: NodeID, bias: f64, activation_function: ActivationFunction) -> Self {
+    pub fn new(id: NodeID, kind: NodeGeneKind) -> Self {
         Self {
             id,
-            bias,
-            activation_function,
+            bias: match kind {
+                NodeGeneKind::Input => implementation_config::DEFAULT_INPUT_BIAS,
+                NodeGeneKind::Hidden => implementation_config::DEFAULT_HIDDEN_BIAS,
+                NodeGeneKind::Output => implementation_config::DEFAULT_OUTPUT_BIAS,
+            },
+            activation_function: match kind {
+                NodeGeneKind::Input => implementation_config::DEFAULT_INPUT_ACTIVATION_FUNCTION,
+                NodeGeneKind::Hidden => implementation_config::DEFAULT_HIDDEN_ACTIVATION_FUNCTION,
+                NodeGeneKind::Output => implementation_config::DEFAULT_OUTPUT_ACTIVATION_FUNCTION,
+            },
+            kind,
         }
     }
 
@@ -89,5 +106,10 @@ impl NodeGene {
     /// Returns the activation function of this NodeGene
     pub fn activation_function(&self) -> ActivationFunction {
         self.activation_function
+    }
+
+    /// Returns the gene kind of this NodeGene
+    pub fn kind(&self) -> NodeGeneKind {
+        self.kind
     }
 }

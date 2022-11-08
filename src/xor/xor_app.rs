@@ -1,15 +1,19 @@
 use crate::{
     frontend::renderable::{RenderArgs, Renderable},
     frontend::updatable::Updatable,
-    neat::population::Population,
+    neat::{
+        genome::Genome, implementation_config, population::Population, predictor::Predictor,
+        predictor_environment::PredictorEnvironment,
+    },
 };
 
 use super::environment_xor::EnvironmentXor;
 
 pub struct XorApp {
     elapsed: f64,
-    population: Population<2, 1>,
+    population: Population,
     environment: EnvironmentXor,
+    best: (Genome, Option<f64>),
 }
 
 impl Renderable for XorApp {
@@ -63,17 +67,31 @@ impl Updatable for XorApp {
         while self.elapsed >= SECONDS_PER_GENERATION {
             self.elapsed -= SECONDS_PER_GENERATION;
 
-            // TODO advance generation
+            // Advance generation
+            let genomes = self.population.get_genomes();
+            let scores = self.environment.evaluate_predictors(&genomes);
+            assert_eq!(genomes.len(), scores.len());
+            let best = genomes
+                .iter()
+                .copied()
+                .zip(scores.iter())
+                .reduce(|accum, item| if item.1 > accum.1 { item } else { accum })
+                .unwrap();
+            self.best = (best.0.clone(), Some(*best.1));
+            self.population.evolve(&scores);
         }
     }
 }
 
 impl XorApp {
     pub fn new() -> Self {
+        let population = Population::new(implementation_config::DEFAULT_POPULATION_SIZE, 2, 1);
+        let best = (population.get_genomes()[0].clone(), None);
         XorApp {
             elapsed: 0.0,
-            population: Population::new(),
+            population,
             environment: EnvironmentXor::new(),
+            best,
         }
     }
 
@@ -85,7 +103,7 @@ impl XorApp {
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
 
         // Transform x, y, width, and height so that we only work in a max-size centered square
-        let (_x, _y, _width, _height) = {
+        let (x, y, width, height) = {
             let side_len = f64::min(width, height);
             (
                 x + (width - side_len) / 2.0,
@@ -96,41 +114,38 @@ impl XorApp {
         };
 
         // Render the XOR field
-        // TODO
-        // if let Some(best) = prev_best {
-        {
-            let resolution = 100;
-            let cell_w = width / resolution as f64;
-            let cell_h = height / resolution as f64;
-            for row in 0..resolution {
-                for col in 0..resolution {
-                    let coord_x = col as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
-                    let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
-                    let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
+        let resolution = 100;
+        let cell_w = width / resolution as f64;
+        let cell_h = height / resolution as f64;
+        for row in 0..resolution {
+            for col in 0..resolution {
+                let coord_x = col as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
+                let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
+                let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
 
-                    // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
-                    // let brightness = best.predict(&[coord_x, coord_y])[0].clamp(0.0, 1.0);
-                    let brightness = (coord_x + coord_y - 2.0 * coord_x * coord_y).clamp(0.0, 1.0);
-                    let color = Color::from_rgba(
-                        (brightness * 255.0).round() as u8,
-                        (brightness * 255.0).round() as u8,
-                        (brightness * 255.0).round() as u8,
-                        255,
-                    );
+                // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
+                let brightness = self.best.0.predict(vec![coord_x, coord_y])[0].clamp(0.0, 1.0);
+                // TODO
+                // let brightness = (coord_x + coord_y - 2.0 * coord_x * coord_y).clamp(0.0, 1.0);
+                let color = Color::from_rgba(
+                    (brightness * 255.0).round() as u8,
+                    (brightness * 255.0).round() as u8,
+                    (brightness * 255.0).round() as u8,
+                    255,
+                );
 
-                    let rect_x = x + cell_w * col as f64;
-                    let rect_y = y + cell_h * row as f64;
+                let rect_x = x + cell_w * col as f64;
+                let rect_y = y + cell_h * row as f64;
 
-                    draw_rectangle(
-                        rect_x as f32,
-                        rect_y as f32,
-                        cell_w as f32,
-                        cell_h as f32,
-                        color,
-                    );
-                }
+                draw_rectangle(
+                    rect_x as f32,
+                    rect_y as f32,
+                    cell_w as f32,
+                    cell_h as f32,
+                    color,
+                );
             }
-        };
+        }
     }
 
     fn render_model(&self, _args: &RenderArgs, x: f64, y: f64, width: f64, height: f64) {
