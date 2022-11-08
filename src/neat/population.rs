@@ -28,7 +28,7 @@ impl Population {
             output_node_ids.push(node_id_generator.next());
         }
 
-        let default_genome: Genome = Genome::new(input_node_ids, output_node_ids);
+        let default_genome: Genome = Genome::new(&input_node_ids, &output_node_ids);
         Self {
             input_count,
             output_count,

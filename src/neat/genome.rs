@@ -32,9 +32,6 @@ impl Predictor<Vec<f64>, Vec<f64>> for Genome {
         // Ensure we're given the right number of inputs
         assert_eq!(inputs.len(), self.input_count);
 
-        // TODO temp
-        // return (0..self.output_count).map(|_| rand::random()).collect();
-
         // TODO
         // This is a naive implementation just to get it working. I'm sure this
         // code could be improved significantly, both in terms of efficiency and
@@ -187,7 +184,7 @@ impl Predictor<Vec<f64>, Vec<f64>> for Genome {
 impl Genome {
     /// Constructs a new Genome from a list of input `NodeID`s and a list of
     /// output `NodeID`s
-    pub fn new(input_node_ids: Vec<NodeID>, output_node_ids: Vec<NodeID>) -> Self {
+    pub fn new(input_node_ids: &[NodeID], output_node_ids: &[NodeID]) -> Self {
         let input_count = input_node_ids.len();
         let output_count = output_node_ids.len();
         let mut innovation_number_generator = InnovationNumberGenerator::new();

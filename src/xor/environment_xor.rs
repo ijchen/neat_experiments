@@ -39,10 +39,13 @@ impl PredictorEnvironment for EnvironmentXor {
                 ];
                 for datum in &training_data {
                     // TODO the .to_vec() should be temp     vvvvvvvvv
-                    score += 1.0 - (predictor.predict(datum.0.to_vec())[0] - datum.1).abs();
+                    score += 1.0
+                        - (predictor.predict(datum.0.to_vec())[0] - datum.1)
+                            .abs()
+                            .clamp(0.0, 1.0);
                 }
 
-                (score / training_data.len() as f64).max(0.0)
+                (score / training_data.len() as f64).clamp(0.0, 1.0)
             })
             .collect()
     }
