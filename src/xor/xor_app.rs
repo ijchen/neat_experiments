@@ -51,7 +51,7 @@ impl Updatable for XorApp {
     fn update(&mut self, dt: f64) {
         const GENERATIONS_PER_SECOND: f64 = 100.0;
         const SECONDS_PER_GENERATION: f64 = 1.0 / GENERATIONS_PER_SECOND;
-        const MAX_TIME: f64 = 1.0 / 30.0;
+        const MAX_TIME: f64 = 1.0 / 30.0 + SECONDS_PER_GENERATION;
 
         self.elapsed += dt;
 
@@ -123,10 +123,9 @@ impl XorApp {
                 let coord_y = row as f64 / resolution as f64 + 1.0 / (2.0 * resolution as f64);
                 let coord_y = 1.0 - coord_y; // Invert y (graphics coordinates go top-to-bottom, unlike typical cartesian coordinates)
 
-                // let brightness = coord_y * coord_x + (1.0 - coord_y) * (1.0 - coord_x);
-                let brightness = self.best.0.predict(vec![coord_x, coord_y])[0].clamp(0.0, 1.0);
                 // TODO
                 // let brightness = (coord_x + coord_y - 2.0 * coord_x * coord_y).clamp(0.0, 1.0);
+                let brightness = self.best.0.predict(vec![coord_x, coord_y])[0].clamp(0.0, 1.0);
                 let color = Color::from_rgba(
                     (brightness * 255.0).round() as u8,
                     (brightness * 255.0).round() as u8,
@@ -167,10 +166,13 @@ impl XorApp {
         draw_rectangle(x as f32, y as f32, width as f32, height as f32, fill);
 
         // Fitness text
-        let score = 0.0; // TODO
-        let elapsed_text = format!("Fitness: {score:.4}");
-        let padding = width as f32 / 25.0;
-        let font_size = f64::max(8.0, width / 20.0) as f32;
+        let score_text = match self.best.1 {
+            Some(score) => format!("{score:.4}"),
+            None => "Not evaluated".to_string(),
+        };
+        let fitness_text = format!("Fitness: {score_text}");
+        let padding = width.min(height * 2.0) as f32 / 25.0;
+        let font_size = (width.min(height * 2.0) / 20.0).max(8.0) as f32;
         let text_params = TextParams {
             font: args.font,
             font_size: font_size.round() as u16,
@@ -179,16 +181,16 @@ impl XorApp {
             color: Color::from_rgba(0, 0, 0, 255),
         };
         draw_text_ex(
-            &elapsed_text,
+            &fitness_text,
             x as f32 + padding,
             y as f32 + height as f32 - padding * 2.0 - font_size as f32,
             text_params,
         );
 
         // Generation text
-        let elapsed_text = format!("Generation: {}", "TODO"); // TODO
-        let padding = width as f32 / 25.0;
-        let font_size = f64::max(8.0, width / 20.0) as f32;
+        let elapsed_text = format!("Generation: {}", self.population.generation());
+        let padding = width.min(height * 2.0) as f32 / 25.0;
+        let font_size = (width.min(height * 2.0) / 20.0).max(8.0) as f32;
         let text_params = TextParams {
             font: args.font,
             font_size: font_size.round() as u16,
