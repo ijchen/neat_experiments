@@ -1,4 +1,6 @@
-use crate::neat::implementation_config::{self, EvolutionStrategy};
+use rand::Rng;
+
+use crate::neat::implementation_config::{self, CrossoverStrategy, ScoreNormalizationStrategy};
 
 use super::{genome::Genome, node_id::NodeIDGenerator};
 
@@ -46,20 +48,68 @@ impl Population {
     /// Evolve the population based on scores for each member of the population
     pub fn evolve(&mut self, scores: &[f64]) {
         // Ensure we have the same number of scores as members of the population
-        assert_eq!(scores.len(), self.gene_pool.len());
+        let pop_size = self.gene_pool.len();
+        assert_eq!(scores.len(), pop_size);
 
-        // Evolve the population
-        match implementation_config::EVOLUTION_STRATEGY {
-            EvolutionStrategy::ClassicalNeat => {
-                todo!();
+        // Normalize scores
+        let scores: Vec<f64> = match implementation_config::SCORE_NORMALIZATION_STRATEGY {
+            ScoreNormalizationStrategy::MapMinMaxToZeroOne => {
+                let (min_score, max_score) = scores
+                    .iter()
+                    .fold(None, |accum: Option<(f64, f64)>, &item| match accum {
+                        Some(curr) => Some((curr.0.min(item), curr.1.max(item))),
+                        None => Some((item, item)),
+                    })
+                    .unwrap();
+
+                scores
+                    .iter()
+                    .map(|score| (score - min_score) / max_score)
+                    .collect()
             }
-            EvolutionStrategy::SimpleProportional => {
-                todo!();
-            }
-            EvolutionStrategy::NoEvolution => {
+            ScoreNormalizationStrategy::NoNormalization => {
                 // Not much to do here...
+                scores.to_vec()
             }
+        };
+
+        // Generate members of the next generation
+        let mut next_generation: Vec<Genome> = match implementation_config::EVOLUTION_STRATEGY {
+            CrossoverStrategy::AsexualProportional => {
+                let mut next_generation = Vec::with_capacity(pop_size);
+
+                let score_sum = scores.iter().copied().reduce(|a, b| a + b).unwrap();
+
+                for _ in 0..pop_size {
+                    if score_sum == 0.0 {
+                        next_generation.push(
+                            self.gene_pool[rand::thread_rng().gen_range(0..pop_size)].clone(),
+                        );
+                    } else {
+                        let mut index = 0;
+                        let mut n = rand::thread_rng().gen_range(0.0..score_sum);
+                        while n > scores[index] {
+                            n -= scores[index];
+                            index += 1;
+                        }
+
+                        next_generation.push(self.gene_pool[index].clone());
+                    }
+                }
+
+                next_generation
+            }
+            CrossoverStrategy::NoEvolution => self.gene_pool.clone(),
+        };
+        assert_eq!(next_generation.len(), pop_size);
+
+        // Mutate the population
+        for genome in next_generation.iter_mut() {
+            genome.mutate();
         }
+
+        // Replace the current population with the next generation
+        self.gene_pool = next_generation;
 
         // Increment the generation
         self.generation += 1;

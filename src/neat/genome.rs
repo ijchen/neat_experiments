@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
+use rand::Rng;
+
 use crate::neat::node_gene::ActivationFunction;
 
 use super::{
     connection_gene::ConnectionGene,
-    implementation_config,
+    implementation_config::{self, MutationStrategy},
     innovation_number::InnovationNumberGenerator,
     node_gene::{NodeGene, NodeGeneKind},
     node_id::NodeID,
@@ -226,5 +228,56 @@ impl Genome {
             node_genes,
             connection_genes,
         }
+    }
+
+    /// Mutates the genome
+    /// Exactly how this works depends on implementation_config
+    pub fn mutate(&mut self) {
+        match implementation_config::MUTATION_STRATEGY {
+            MutationStrategy::NoMutation => {}
+            MutationStrategy::SimpleRandomMutation => {
+                // TODO this is temporary, I just want to get something working
+
+                for node_gene in self.node_genes.iter_mut() {
+                    match node_gene.kind() {
+                        NodeGeneKind::Input => {}
+                        NodeGeneKind::Hidden | NodeGeneKind::Output => {
+                            if rand::random::<f64>() < 0.10 {
+                                let new_bias =
+                                    node_gene.bias() + rand::thread_rng().gen_range(-0.2..0.2);
+                                node_gene.set_bias(new_bias);
+                            }
+
+                            if rand::random::<f64>() < 0.05 {
+                                let new_activation_fn = match rand::thread_rng().gen_range(0..8) {
+                                    0 => ActivationFunction::Identity,
+                                    1 => ActivationFunction::Step,
+                                    2 => ActivationFunction::Sigmoid,
+                                    3 => ActivationFunction::Tanh,
+                                    4 => ActivationFunction::Arctan,
+                                    5 => ActivationFunction::Relu,
+                                    6 => ActivationFunction::LeakyRelu(rand::random()),
+                                    7 => ActivationFunction::Sqnl,
+                                    _ => unreachable!(),
+                                };
+                                node_gene.set_activation_function(new_activation_fn);
+                            }
+                        }
+                    }
+                }
+
+                for connection_gene in self.connection_genes.iter_mut() {
+                    if rand::random::<f64>() < 0.10 {
+                        let new_weight =
+                            connection_gene.weight() + rand::thread_rng().gen_range(-0.2..0.2);
+                        connection_gene.set_weight(new_weight);
+
+                        if rand::random::<f64>() < 0.05 {
+                            connection_gene.toggle_enabled();
+                        }
+                    }
+                }
+            }
+        };
     }
 }

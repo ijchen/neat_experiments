@@ -77,13 +77,18 @@ pub struct NodeGene {
 impl NodeGene {
     /// Constructs a new NodeGene
     pub fn new(id: NodeID, kind: NodeGeneKind) -> Self {
+        let bias = match kind {
+            NodeGeneKind::Input => implementation_config::DEFAULT_INPUT_BIAS,
+            NodeGeneKind::Hidden => implementation_config::DEFAULT_HIDDEN_BIAS,
+            NodeGeneKind::Output => implementation_config::DEFAULT_OUTPUT_BIAS,
+        };
+        if bias.is_infinite() || bias.is_nan() {
+            panic!("Bias cannot be infinite or NaN");
+        }
+
         Self {
             id,
-            bias: match kind {
-                NodeGeneKind::Input => implementation_config::DEFAULT_INPUT_BIAS,
-                NodeGeneKind::Hidden => implementation_config::DEFAULT_HIDDEN_BIAS,
-                NodeGeneKind::Output => implementation_config::DEFAULT_OUTPUT_BIAS,
-            },
+            bias,
             activation_function: match kind {
                 NodeGeneKind::Input => implementation_config::DEFAULT_INPUT_ACTIVATION_FUNCTION,
                 NodeGeneKind::Hidden => implementation_config::DEFAULT_HIDDEN_ACTIVATION_FUNCTION,
@@ -111,5 +116,19 @@ impl NodeGene {
     /// Returns the gene kind of this NodeGene
     pub fn kind(&self) -> NodeGeneKind {
         self.kind
+    }
+
+    /// Sets the bias
+    pub fn set_bias(&mut self, bias: f64) {
+        if bias.is_infinite() || bias.is_nan() {
+            panic!("Bias cannot be infinite or NaN");
+        }
+
+        self.bias = bias;
+    }
+
+    /// Sets the activation function
+    pub fn set_activation_function(&mut self, activation_function: ActivationFunction) {
+        self.activation_function = activation_function;
     }
 }

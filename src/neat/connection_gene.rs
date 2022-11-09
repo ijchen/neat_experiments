@@ -48,4 +48,14 @@ impl ConnectionGene {
     pub fn enabled(&self) -> bool {
         self.enabled
     }
+
+    /// Sets the weight of this ConnectionGene
+    pub fn set_weight(&mut self, weight: f64) {
+        self.weight = weight;
+    }
+
+    /// Toggles whether or not this ConnectionGene is enabled
+    pub fn toggle_enabled(&mut self) {
+        self.enabled = !self.enabled;
+    }
 }
