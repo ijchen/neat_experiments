@@ -2,8 +2,8 @@ use crate::{
     frontend::renderable::{RenderArgs, Renderable},
     frontend::updatable::Updatable,
     neat::{
-        genome::Genome, implementation_config, population::Population, predictor::Predictor,
-        predictor_environment::PredictorEnvironment,
+        genome::Genome, implementation_config, neat_config::NeatConfig, population::Population,
+        predictor::Predictor, predictor_environment::PredictorEnvironment,
     },
 };
 
@@ -85,7 +85,8 @@ impl Updatable for XorApp {
 
 impl XorApp {
     pub fn new() -> Self {
-        let population = Population::new(implementation_config::DEFAULT_POPULATION_SIZE, 2, 1);
+        let config = NeatConfig::default();
+        let population = Population::new(2, 1, &config);
         let best = (population.get_genomes()[0].clone(), None);
         XorApp {
             elapsed: 0.0,

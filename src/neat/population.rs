@@ -1,22 +1,29 @@
 use rand::Rng;
 
-use crate::neat::implementation_config::{self, CrossoverStrategy, ScoreNormalizationStrategy};
+use crate::neat::implementation_config::{self, CrossoverStrategy};
 
-use super::{genome::Genome, node_id::NodeIDGenerator};
+use super::{
+    genome::Genome,
+    neat_config::NeatConfig,
+    node_id::NodeIDGenerator,
+    score_normalizer::{self, ScoreNormalizationStrategy},
+};
 
 /// Represents a population of genomes from the NEAT algorithm
 #[derive(Debug)]
 pub struct Population {
     input_count: usize,
     output_count: usize,
+    score_normalization_strategy: ScoreNormalizationStrategy,
+
+    node_id_generator: NodeIDGenerator,
     generation: u32,
     gene_pool: Vec<Genome>,
-    node_id_generator: NodeIDGenerator,
 }
 
 impl Population {
     /// Constructs a new Population with the given population size
-    pub fn new(population_size: usize, input_count: usize, output_count: usize) -> Self {
+    pub fn new(input_count: usize, output_count: usize, config: &NeatConfig) -> Self {
         let mut node_id_generator = NodeIDGenerator::new();
 
         // Generate input node IDs
@@ -34,9 +41,11 @@ impl Population {
         Self {
             input_count,
             output_count,
-            generation: 0,
-            gene_pool: vec![default_genome; population_size],
+            score_normalization_strategy: config.score_normalization_strategy(),
+
             node_id_generator,
+            generation: 0,
+            gene_pool: vec![default_genome; config.population_size()],
         }
     }
 
@@ -52,26 +61,7 @@ impl Population {
         assert_eq!(scores.len(), pop_size);
 
         // Normalize scores
-        let scores: Vec<f64> = match implementation_config::SCORE_NORMALIZATION_STRATEGY {
-            ScoreNormalizationStrategy::MapMinMaxToZeroOne => {
-                let (min_score, max_score) = scores
-                    .iter()
-                    .fold(None, |accum: Option<(f64, f64)>, &item| match accum {
-                        Some(curr) => Some((curr.0.min(item), curr.1.max(item))),
-                        None => Some((item, item)),
-                    })
-                    .unwrap();
-
-                scores
-                    .iter()
-                    .map(|score| (score - min_score) / max_score)
-                    .collect()
-            }
-            ScoreNormalizationStrategy::NoNormalization => {
-                // Not much to do here...
-                scores.to_vec()
-            }
-        };
+        let scores: Vec<f64> = self.score_normalization_strategy.normalize(scores);
 
         // Generate members of the next generation
         let mut next_generation: Vec<Genome> = match implementation_config::EVOLUTION_STRATEGY {
