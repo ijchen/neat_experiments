@@ -3,10 +3,8 @@ use rand::Rng;
 use crate::neat::implementation_config::{self, CrossoverStrategy};
 
 use super::{
-    genome::Genome,
-    neat_config::NeatConfig,
-    node_id::NodeIDGenerator,
-    score_normalizer::{self, ScoreNormalizationStrategy},
+    genome::Genome, neat_config::NeatConfig, node_id::NodeIDGenerator,
+    score_normalizer::ScoreNormalizationStrategy,
 };
 
 /// Represents a population of genomes from the NEAT algorithm

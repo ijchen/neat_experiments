@@ -2,8 +2,8 @@ use crate::{
     frontend::renderable::{RenderArgs, Renderable},
     frontend::updatable::Updatable,
     neat::{
-        genome::Genome, implementation_config, neat_config::NeatConfig, population::Population,
-        predictor::Predictor, predictor_environment::PredictorEnvironment,
+        genome::Genome, neat_config::NeatConfig, population::Population, predictor::Predictor,
+        predictor_environment::PredictorEnvironment,
     },
 };
 

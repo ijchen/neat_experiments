@@ -1,5 +1,6 @@
 /// A strategy for normalizing a list of scores from a population
 #[derive(Clone, Copy, Debug)]
+#[allow(dead_code)] // TODO
 pub enum ScoreNormalizationStrategy {
     /// Makes no changes to the input scores, except replacing all 0.0s with all
     /// 1.0s
