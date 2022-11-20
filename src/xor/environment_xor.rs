@@ -7,7 +7,7 @@ impl PredictorEnvironment for EnvironmentXor {
     type Output = Vec<f64>;
     type PredictorScore = f64;
 
-    fn evaluate_predictors<P: Predictor<Vec<f64>, Vec<f64>>>(
+    fn evaluate_predictors<P: Predictor<Self::Input, Self::Output>>(
         &mut self,
         population: &[&P],
     ) -> Vec<f64> {
@@ -38,7 +38,8 @@ impl PredictorEnvironment for EnvironmentXor {
                     // ([0.5, 1.0], 0.5),
                 ];
                 for datum in &training_data {
-                    // TODO the .to_vec() should be temp     vvvvvvvvv
+                    // TODO the .to_vec() is because I can't figure out how to
+                    // make Self::Input be a reference (weird lifetime stuff)
                     score += 1.0
                         - (predictor.predict(datum.0.to_vec())[0] - datum.1)
                             .abs()

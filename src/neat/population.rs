@@ -69,20 +69,14 @@ impl Population {
                 let score_sum = scores.iter().copied().reduce(|a, b| a + b).unwrap();
 
                 for _ in 0..pop_size {
-                    if score_sum == 0.0 {
-                        next_generation.push(
-                            self.gene_pool[rand::thread_rng().gen_range(0..pop_size)].clone(),
-                        );
-                    } else {
-                        let mut index = 0;
-                        let mut n = rand::thread_rng().gen_range(0.0..score_sum);
-                        while n > scores[index] {
-                            n -= scores[index];
-                            index += 1;
-                        }
-
-                        next_generation.push(self.gene_pool[index].clone());
+                    let mut index = 0;
+                    let mut n = rand::thread_rng().gen_range(0.0..score_sum);
+                    while n > scores[index] {
+                        n -= scores[index];
+                        index += 1;
                     }
+
+                    next_generation.push(self.gene_pool[index].clone());
                 }
 
                 next_generation
